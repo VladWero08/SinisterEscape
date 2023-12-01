@@ -22,10 +22,21 @@ const byte arrow[8] = {
 	0b00000
 };
 
+const byte verify[8] = {
+	0b00000,
+	0b00000,
+	0b00001,
+	0b00011,
+	0b10110,
+	0b11100,
+	0b01000,
+	0b00000
+};
+
 // number of custom characters that will be created
-const byte numberOfCustomChars = 2;
+const byte numberOfCustomChars = 3;
 // array with all custom characters
-const byte *customChars[numberOfCustomChars] = {skull, arrow};
+const byte *customChars[numberOfCustomChars] = {skull, arrow, verify};
 
 /*
   Create each character that has been declared.

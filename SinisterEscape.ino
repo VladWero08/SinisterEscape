@@ -1,33 +1,37 @@
-#include "custom_characters.h"
+#include "CustomCharacters.h"
 // #include "joystick.h"
-#include "menu.h"
+#include "Menu.h"
 
 // PINs connected to the joystick
 // digital pin connected to joystick's switch output
-const byte joystick_pin_SW = 2;
+const byte joystickinSW = 2;
 // analogue pin connected to X axis
-const byte joystick_pin_X = A0;
+const byte joystickinX = A0;
 // analogue pin connected to Y axis
-const byte joystick_pin_Y = A1;
+const byte joystickinY = A1;
 
-Joystick joystick(joystick_pin_SW, joystick_pin_X, joystick_pin_Y);
+Joystick joystick(joystickinSW, joystickinX, joystickinY);
 
 // PINs connected to the LCD
-const byte lcd_rs = 9; 
-const byte lcd_en = 8;
-const byte lcd_d4 = 7;
-const byte lcd_d5 = 6;
-const byte lcd_d6 = 5;
-const byte lcd_d7 = 4;
+const byte lcdRS = 9; 
+const byte lcdEN = 8;
+const byte lcdD4 = 7;
+const byte lcdD5 = 6;
+const byte lcdD6 = 5;
+const byte lcdD7 = 4;
+const byte birgt = 10;
 
-Menu menu(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6, lcd_d7);
+Menu menu(lcdRS, lcdEN, lcdD4, lcdD5, lcdD6, lcdD7);
 
 void setup() {
   // set up joystick's pins
-  pinMode(joystick_pin_SW, INPUT_PULLUP);
-  pinMode(joystick_pin_X, INPUT);
-  pinMode(joystick_pin_Y, INPUT);
+  pinMode(joystickinSW, INPUT_PULLUP);
+  pinMode(joystickinX, INPUT);
+  pinMode(joystickinY, INPUT);
   
+  pinMode(birgt, OUTPUT);
+  analogWrite(birgt, 100);
+
   initializeCustomChars(menu.lcd);
   // set up the LCD's number of columns and rows
   menu.lcd.begin(16, 2);
@@ -39,6 +43,6 @@ void loop() {
   joystick.switchHandler();
   joystick.movementHandler();
  
-  menu.menuSwitch(joystick);
+  menu.lcdBrightnessMenuHandler(joystick);
 }
 
