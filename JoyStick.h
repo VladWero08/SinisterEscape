@@ -1,3 +1,7 @@
+#pragma once
+#ifndef JOYSTICK_H
+#define JOYSTICK_H
+
 /* each direction of the joystick will have a
 column in the matrix associated*/
 const byte joystickUp = 0;
@@ -92,3 +96,5 @@ void Joystick::movementHandler(){
     direction = joystickLeft;      // joystick is pointing left 
   }
 }
+
+#endif

@@ -1,6 +1,7 @@
 #include "CustomCharacters.h"
 // #include "joystick.h"
 #include "Menu.h"
+#include "Melody.h"
 
 // PINs connected to the joystick
 // digital pin connected to joystick's switch output
@@ -19,9 +20,12 @@ const byte lcdD4 = 7;
 const byte lcdD5 = 6;
 const byte lcdD6 = 5;
 const byte lcdD7 = 4;
-const byte birgt = 10;
+const byte brightnessPin = 10;
 
 Menu menu(lcdRS, lcdEN, lcdD4, lcdD5, lcdD6, lcdD7);
+
+// buzzer PIN
+const byte buzzerPin = 3;
 
 void setup() {
   // set up joystick's pins
@@ -29,12 +33,17 @@ void setup() {
   pinMode(joystickinX, INPUT);
   pinMode(joystickinY, INPUT);
   
-  pinMode(birgt, OUTPUT);
-  analogWrite(birgt, 100);
+  // set brightness pin for LCD
+  pinMode(brightnessPin, OUTPUT);
+  analogWrite(brightnessPin, 100);
 
+  // initialize the customized characters for the LCD
   initializeCustomChars(menu.lcd);
   // set up the LCD's number of columns and rows
   menu.lcd.begin(16, 2);
+
+  // set the buzzer pin
+  pinMode(buzzerPin, OUTPUT);
 
   Serial.begin(9600);
 }
@@ -43,6 +52,6 @@ void loop() {
   joystick.switchHandler();
   joystick.movementHandler();
  
-  menu.lcdBrightnessMenuHandler(joystick);
+  menu.menuSwitch(joystick);
 }
 
