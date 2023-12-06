@@ -247,18 +247,36 @@ void Menu::settingsMenuHandler(Joystick joystick){
 };
 
 void Menu::enterNameHandler(Joystick joystick){
-  menuInput.userInputHandler(lcd, joystick, usernameSize, username, letterAlphabet);
-  menuInput.userAlphabetHandler(lcd, joystick, letterAlphabet, 0, letterAlphabetSize);
+  menuInput.userCursorLineHandler(lcd, joystick, letterAlphabet);
+
+  if (menuInput.currentCursorLinePosition == 0) {
+    menuInput.userInputControlsHandler(lcd, joystick);
+  } else {
+    menuInput.userInputHandler(lcd, joystick, usernameSize, username, letterAlphabet);
+    menuInput.userAlphabetHandler(lcd, joystick, letterAlphabet, 0, letterAlphabetSize);
+  }
 }
 
 void Menu::lcdBrightnessMenuHandler(Joystick joystick){
-  menuInput.userInputHandler(lcd, joystick, brightnessNumberSize, brightnessNumber, numbersAlphabet);
-  menuInput.userAlphabetHandler(lcd, joystick, numbersAlphabet, 0, numbersAlphabetSize);
+  menuInput.userCursorLineHandler(lcd, joystick, numbersAlphabet);
+
+  if (menuInput.currentCursorLinePosition == 0) {
+    menuInput.userInputControlsHandler(lcd, joystick);
+  } else {
+    menuInput.userInputHandler(lcd, joystick, brightnessNumberSize, brightnessNumber, numbersAlphabet);
+    menuInput.userAlphabetHandler(lcd, joystick, numbersAlphabet, 0, numbersAlphabetSize);
+  }
 };
 
 void Menu::matrixBrightnessMenuHandler(Joystick joystick){
-  menuInput.userInputHandler(lcd, joystick, brightnessNumberSize, brightnessNumber, numbersAlphabet);
-  menuInput.userAlphabetHandler(lcd, joystick, numbersAlphabet, 0, numbersAlphabetSize);
+  menuInput.userCursorLineHandler(lcd, joystick, numbersAlphabet);
+
+  if (menuInput.currentCursorLinePosition == 0) {
+    menuInput.userInputControlsHandler(lcd, joystick);
+  } else {
+    menuInput.userInputHandler(lcd, joystick, brightnessNumberSize, brightnessNumber, numbersAlphabet);
+    menuInput.userAlphabetHandler(lcd, joystick, numbersAlphabet, 0, numbersAlphabetSize);
+  }
 };
 
 #endif

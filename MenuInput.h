@@ -8,21 +8,32 @@
 
 const byte arrowPosition = 0;
 const byte userInputStartPosition = 2;
-const byte verifyPosition = 15;
+const byte deletePosition = 12;
+const byte verifyPosition = 13;
+const byte exitPosition = 15;
+const byte symbolPositions[3] = {
+  deletePosition, verifyPosition, exitPosition 
+};
 
 struct MenuInput{
   byte alphabetPositionBoundary;
-  byte currentAlphabetCursorPosition;
+  byte currentCursorLinePosition;
+  byte currentCursorColumnPosition;
   byte currentInputCursorPosition;
 
   MenuInput(){
-    currentAlphabetCursorPosition = 0;
+    currentCursorLinePosition = 1;
+    currentCursorColumnPosition = 0;
+
     currentInputCursorPosition = 0;
     alphabetPositionBoundary = 0;
   } 
 
   void userInputHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, const char* userInput[], const char* userAlphabet[]);
   void userAlphabetHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[], const int leftBoundary, const int rightBoundary);
+  void userInputControlsHandler(LiquidCrystal lcd, Joystick joystick);
+  void userCursorLineHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[]);
+
   void resetInputVariables();
 };
 
@@ -41,16 +52,24 @@ void MenuInput::userInputHandler(LiquidCrystal lcd, Joystick joystick, const int
   lcd.setCursor(arrowPosition, 0);
   lcd.write((uint8_t) 1);
 
-  // display the verify symbol the end of the input
-  lcd.setCursor(verifyPosition, 0);
+  // display the delete symbol
+  lcd.setCursor(deletePosition, 0);
   lcd.write((uint8_t) 2);
+
+  // display the verify symbol 
+  lcd.setCursor(verifyPosition, 0);
+  lcd.write((uint8_t) 3);
+
+  // displat the exit symbol
+  lcd.setCursor(exitPosition, 0);
+  lcd.write((uint8_t) 4);
 
   // if the input has not reached the maximum size
   if (currentInputCursorPosition < maxInput) {
     // check if the joystick switch was pressed, and if
     // it was, add the letter the user is pointing at in the input
     if (joystick.currentSwitchStateChanged == HIGH) {
-      userInput[currentInputCursorPosition] = userAlphabet[currentAlphabetCursorPosition];
+      userInput[currentInputCursorPosition] = userAlphabet[currentCursorColumnPosition];
       currentInputCursorPosition += 1;
     }
   }
@@ -75,22 +94,22 @@ void MenuInput::userInputHandler(LiquidCrystal lcd, Joystick joystick, const int
 void MenuInput::userAlphabetHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[], const int leftBoundary, const int rightBoundary) {
   // if the joystick moved to the left and the cursor position
   // will not move out of the left boundary of the alphabet
-  if (joystick.direction == joystickLeft && currentAlphabetCursorPosition > leftBoundary) {
-    currentAlphabetCursorPosition -= 1;
+  if (joystick.direction == joystickLeft && currentCursorColumnPosition > leftBoundary) {
+    currentCursorColumnPosition -= 1;
 
     // if the cursor position moved beyond the right boundary of the LCD 
-    if (currentAlphabetCursorPosition < alphabetPositionBoundary) {
+    if (currentCursorColumnPosition < alphabetPositionBoundary) {
       alphabetPositionBoundary -= 1;
     }
   } 
 
   // if the joystick moved to the right and the cursor position
   // will not move out of the right boundary of the alphabet
-  if (joystick.direction == joystickRight && currentAlphabetCursorPosition < rightBoundary) {
-    currentAlphabetCursorPosition += 1;
+  if (joystick.direction == joystickRight && currentCursorColumnPosition < rightBoundary) {
+    currentCursorColumnPosition += 1;
 
     // if the cursor position moved beyond the left boundary of the LCD 
-    if (currentAlphabetCursorPosition >= alphabetPositionBoundary + 16) {
+    if (currentCursorColumnPosition >= alphabetPositionBoundary + 16) {
       alphabetPositionBoundary += 1;
     }
   }
@@ -98,9 +117,9 @@ void MenuInput::userAlphabetHandler(LiquidCrystal lcd, Joystick joystick, const 
   // display the alphabet and make the element positioned at
   // the cursor position blink
   for (int i = 0; i < min(rightBoundary, 16); i++) {
-    if (i + alphabetPositionBoundary == currentAlphabetCursorPosition) {
+    if (i + alphabetPositionBoundary == currentCursorColumnPosition) {
       // blink the cursor
-      displayBlinkingChar(lcd, userAlphabet[currentAlphabetCursorPosition], 1, i);
+      displayBlinkingChar(lcd, userAlphabet[currentCursorColumnPosition], 1, i);
     } else {
       // display the characters of the alphabet
       lcd.setCursor(i, 1);
@@ -109,14 +128,107 @@ void MenuInput::userAlphabetHandler(LiquidCrystal lcd, Joystick joystick, const 
   }
 };
 
+void MenuInput::userInputControlsHandler(LiquidCrystal lcd, Joystick joystick){
+  if (joystick.direction == joystickLeft && currentCursorColumnPosition > deletePosition) {
+    currentCursorColumnPosition -= 1;
+  }
+
+  if (joystick.direction == joystickRight && currentCursorColumnPosition < exitPosition) {
+    currentCursorColumnPosition += 1;
+  }
+
+  switch (currentCursorColumnPosition) {
+    case deletePosition:
+      displayBlinkingInt(lcd, 2, currentCursorLinePosition, currentCursorColumnPosition);
+
+      lcd.setCursor(verifyPosition, currentCursorLinePosition);
+      lcd.write((uint8_t) 3);
+      
+      lcd.setCursor(exitPosition, currentCursorLinePosition);
+      lcd.write((uint8_t) 4);
+      break;
+    
+    case verifyPosition:
+      displayBlinkingInt(lcd, 3, currentCursorLinePosition, currentCursorColumnPosition);
+      
+      lcd.setCursor(deletePosition, currentCursorLinePosition);
+      lcd.write((uint8_t) 2);
+      
+      lcd.setCursor(exitPosition, currentCursorLinePosition);
+      lcd.write((uint8_t) 4);
+      break;
+
+    case exitPosition:
+      displayBlinkingInt(lcd, 4, currentCursorLinePosition, currentCursorColumnPosition);
+
+      lcd.setCursor(deletePosition, currentCursorLinePosition);
+      lcd.write((uint8_t) 2);
+
+      lcd.setCursor(verifyPosition, currentCursorLinePosition);
+      lcd.write((uint8_t) 3);      
+      break;
+
+    default:
+      lcd.setCursor(currentCursorColumnPosition, currentCursorLinePosition);
+      lcd.cursor();
+
+      lcd.setCursor(deletePosition, currentCursorLinePosition);
+      lcd.write((uint8_t) 2);
+
+      lcd.setCursor(verifyPosition, currentCursorLinePosition);
+      lcd.write((uint8_t) 3);  
+
+      lcd.setCursor(exitPosition, currentCursorLinePosition);
+      lcd.write((uint8_t) 4);
+      break;
+  }
+}
+
+void MenuInput::userCursorLineHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[]){
+  if (joystick.direction == joystickUp && currentCursorLinePosition == 1) {
+    // when switching from the alphabet to the controls, 
+    // update the column cursor to proportionally point to a LCD
+    // column, not a column from the alphabet
+    currentCursorColumnPosition -= alphabetPositionBoundary;
+
+    lcd.setCursor(currentCursorColumnPosition, currentCursorLinePosition);
+    lcd.print(userAlphabet[currentCursorColumnPosition + alphabetPositionBoundary]);
+
+    // update the line position
+    currentCursorLinePosition -= 1;
+  }
+
+  if (joystick.direction == joystickDown && currentCursorLinePosition == 0) {
+    lcd.setCursor(currentCursorColumnPosition, currentCursorLinePosition);
+
+    switch (currentCursorColumnPosition) {
+      case deletePosition:
+        lcd.write((uint8_t) 2);
+        break;      
+      case verifyPosition:
+        lcd.write((uint8_t) 3);
+        break;
+      case exitPosition:
+        lcd.write((uint8_t) 4);      
+        break;
+      default:
+        break;
+    }
+
+    currentCursorLinePosition += 1;
+  }
+}
+
 /*
   Reset the variables to be reusable for new
   alphabets or user inputs.
 */
 void MenuInput::resetInputVariables(){
-  currentAlphabetCursorPosition = 0;
-  currentInputCursorPosition = 0;
-  alphabetPositionBoundary = 0;
+    currentCursorLinePosition = 1;
+    currentCursorColumnPosition = 0;
+
+    currentInputCursorPosition = 0;
+    alphabetPositionBoundary = 0;
 };
 
 #endif
