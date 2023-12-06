@@ -29,9 +29,10 @@ struct MenuInput{
     alphabetPositionBoundary = 0;
   } 
 
-  void userInputHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, const char* userInput[], const char* userAlphabet[]);
+  void userInputHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[], const char* userAlphabet[]);
   void userAlphabetHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[], const int leftBoundary, const int rightBoundary);
   void userInputControlsHandler(LiquidCrystal lcd, Joystick joystick);
+  int joystickPressControlsHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[]);
   void userCursorLineHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[]);
 
   void resetInputVariables();
@@ -47,7 +48,7 @@ struct MenuInput{
 
   Display the user input on line 1 of the LCD.
 */
-void MenuInput::userInputHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, const char* userInput[], const char* userAlphabet[]) {
+void MenuInput::userInputHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[], const char* userAlphabet[]) {
   // display the arrow at the beggining of the input
   lcd.setCursor(arrowPosition, 0);
   lcd.write((uint8_t) 1);
@@ -60,7 +61,7 @@ void MenuInput::userInputHandler(LiquidCrystal lcd, Joystick joystick, const int
   lcd.setCursor(verifyPosition, 0);
   lcd.write((uint8_t) 3);
 
-  // displat the exit symbol
+  // display the exit symbol
   lcd.setCursor(exitPosition, 0);
   lcd.write((uint8_t) 4);
 
@@ -171,17 +172,37 @@ void MenuInput::userInputControlsHandler(LiquidCrystal lcd, Joystick joystick){
     default:
       lcd.setCursor(currentCursorColumnPosition, currentCursorLinePosition);
       lcd.cursor();
-
-      lcd.setCursor(deletePosition, currentCursorLinePosition);
-      lcd.write((uint8_t) 2);
-
-      lcd.setCursor(verifyPosition, currentCursorLinePosition);
-      lcd.write((uint8_t) 3);  
-
-      lcd.setCursor(exitPosition, currentCursorLinePosition);
-      lcd.write((uint8_t) 4);
       break;
   }
+};
+
+int MenuInput::joystickPressControlsHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[]){
+  // if the joystick has not been pressed, exit
+  if (joystick.currentSwitchStateChanged != HIGH) {
+    return -1;
+  }
+
+  // if the cursor is not pointing to the first line, exit
+  if (currentCursorLinePosition != 0) {
+    return -1;
+  }
+  
+  lcd.clear();
+  
+  if (currentCursorColumnPosition == deletePosition) {
+    currentInputCursorPosition = 0;
+    // empty the userInput values
+    for (int i = 0; i < maxInput; i++) {
+      userInput[i] = "";
+    }
+  } else if (currentCursorColumnPosition == verifyPosition) {
+    // TO DO: save the name in memory and EEPROM
+    return 1;
+  } else if (currentCursorColumnPosition == exitPosition) {
+    return 1;
+  }
+
+  return -1;
 }
 
 void MenuInput::userCursorLineHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[]){
@@ -217,7 +238,7 @@ void MenuInput::userCursorLineHandler(LiquidCrystal lcd, Joystick joystick, cons
 
     currentCursorLinePosition += 1;
   }
-}
+};
 
 /*
   Reset the variables to be reusable for new

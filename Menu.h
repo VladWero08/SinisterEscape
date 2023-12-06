@@ -17,10 +17,10 @@ const char* settingsMenu[settingsMenuSize] = {
 };
 
 const byte usernameSize = 3;
-const char* username[usernameSize] = {"", "", ""}; 
+char* username[usernameSize] = {"", "", ""}; 
 
 const byte brightnessNumberSize = 3;
-const char* brightnessNumber[brightnessNumberSize];
+char* brightnessNumber[brightnessNumberSize];
 
 const byte letterAlphabetSize = 26;
 const char* letterAlphabet[letterAlphabetSize] = {
@@ -35,6 +35,9 @@ const char* numbersAlphabet[numbersAlphabetSize] = {
 struct Menu{
   LiquidCrystal lcd;
 
+  bool sound;
+  bool soundExitBlinking;
+
   byte currentMenu;
   byte arrowMenuPosition;
   byte arrowMenuLine;
@@ -43,6 +46,9 @@ struct Menu{
   MenuInput menuInput;
 
   Menu(byte RS, byte EN, byte D4, byte D5, byte D6, byte D7): lcd(RS, EN, D4, D5, D6, D7){    
+    sound = true;
+    soundExitBlinking = false;
+
     currentMenu = 0;
     arrowMenuPosition = 0;
     arrowMenuLine = 0;
@@ -62,6 +68,7 @@ struct Menu{
   void enterNameHandler(Joystick joystick);
   void lcdBrightnessMenuHandler(Joystick joystick);
   void matrixBrightnessMenuHandler(Joystick joystick);
+  void soundToggleHandler(Joystick joystick);
 };
 
 void Menu::menuSwitch(Joystick joystick){
@@ -95,6 +102,10 @@ void Menu::menuSwitch(Joystick joystick){
     case 32:
       // user needs to enter a number of matrix brightness
       matrixBrightnessMenuHandler(joystick);
+      break;
+    case 33:
+      // user needs to toggle the sound
+      soundToggleHandler(joystick);
       break;
     case 4:
       // display about
@@ -233,6 +244,7 @@ void Menu::settingsMenuHandler(Joystick joystick){
         break;
       case 3:
         // set the sounde ON/OFF
+        currentMenu = 33;
         break;
       case 4:
         // go back to the main menu
@@ -249,6 +261,15 @@ void Menu::settingsMenuHandler(Joystick joystick){
 void Menu::enterNameHandler(Joystick joystick){
   menuInput.userCursorLineHandler(lcd, joystick, letterAlphabet);
 
+  int returnToParentMenu = menuInput.joystickPressControlsHandler(lcd, joystick, usernameSize, username);
+
+  if (returnToParentMenu == 1) {
+    menuInput.resetInputVariables();
+    currentMenu = 3;
+    return;
+  }
+
+
   if (menuInput.currentCursorLinePosition == 0) {
     menuInput.userInputControlsHandler(lcd, joystick);
   } else {
@@ -259,6 +280,14 @@ void Menu::enterNameHandler(Joystick joystick){
 
 void Menu::lcdBrightnessMenuHandler(Joystick joystick){
   menuInput.userCursorLineHandler(lcd, joystick, numbersAlphabet);
+
+  int returnToParentMenu = menuInput.joystickPressControlsHandler(lcd, joystick, brightnessNumberSize, brightnessNumber);
+
+  if (returnToParentMenu == 1) {
+    menuInput.resetInputVariables();
+    currentMenu = 3;
+    return;
+  }
 
   if (menuInput.currentCursorLinePosition == 0) {
     menuInput.userInputControlsHandler(lcd, joystick);
@@ -271,6 +300,14 @@ void Menu::lcdBrightnessMenuHandler(Joystick joystick){
 void Menu::matrixBrightnessMenuHandler(Joystick joystick){
   menuInput.userCursorLineHandler(lcd, joystick, numbersAlphabet);
 
+  int returnToParentMenu = menuInput.joystickPressControlsHandler(lcd, joystick, brightnessNumberSize, brightnessNumber);
+
+  if (returnToParentMenu == 1) {
+    menuInput.resetInputVariables();
+    currentMenu = 3;
+    return;
+  }
+
   if (menuInput.currentCursorLinePosition == 0) {
     menuInput.userInputControlsHandler(lcd, joystick);
   } else {
@@ -278,5 +315,31 @@ void Menu::matrixBrightnessMenuHandler(Joystick joystick){
     menuInput.userAlphabetHandler(lcd, joystick, numbersAlphabet, 0, numbersAlphabetSize);
   }
 };
+
+void Menu::soundToggleHandler(Joystick joystick){
+  if (joystick.direction == joystickRight && soundExitBlinking == false) {
+    soundExitBlinking = true;
+  } 
+
+  if (joystick.direction == joystickLeft && soundExitBlinking == true) {
+    soundExitBlinking = false;
+  }
+
+  if (joystick.currentSwitchStateChanged == HIGH) {
+    lcd.clear();
+    // if the joystick is pressed and the user
+    // is pointing towards the exit, exit from the sound menu
+    if (soundExitBlinking) {
+      currentMenu = 3;
+      return;
+    }
+    // otherwise, toggle the sound buttton
+    else {
+      sound = !sound;
+    }
+  }
+
+  displaySoundSetting(lcd, sound, soundExitBlinking);
+}
 
 #endif
