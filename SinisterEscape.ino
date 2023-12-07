@@ -1,7 +1,11 @@
 #include "CustomCharacters.h"
 // #include "joystick.h"
 #include "Menu.h"
-#include "Melody.h"
+
+// PINs connected to the matrix
+const byte dinPin = 13;
+const byte clockPin = 11;
+const byte loadPin = 12;
 
 // PINs connected to the joystick
 // digital pin connected to joystick's switch output
@@ -13,6 +17,9 @@ const byte joystickinY = A1;
 
 Joystick joystick(joystickinSW, joystickinX, joystickinY);
 
+// buzzer PIN
+const byte buzzerPin = 3;
+
 // PINs connected to the LCD
 const byte lcdRS = 9; 
 const byte lcdEN = 8;
@@ -22,10 +29,8 @@ const byte lcdD6 = 5;
 const byte lcdD7 = 4;
 const byte brightnessPin = 10;
 
-Menu menu(lcdRS, lcdEN, lcdD4, lcdD5, lcdD6, lcdD7);
+Menu menu(lcdRS, lcdEN, lcdD4, lcdD5, lcdD6, lcdD7, dinPin, clockPin, loadPin, buzzerPin, brightnessPin);
 
-// buzzer PIN
-const byte buzzerPin = 3;
 
 void setup() {
   // set up joystick's pins
@@ -53,6 +58,5 @@ void loop() {
   joystick.movementHandler();
  
   menu.menuSwitch(joystick);
-    // playMelody(3, melodyNBC, durationsNBC);
 }
 

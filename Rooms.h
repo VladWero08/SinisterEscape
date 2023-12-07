@@ -1,4 +1,10 @@
+#pragma once
+#ifndef ROOMS_H
+#define ROOMS_H
+
 const byte roomsSize = 4;
+// array which contains the initial configuration
+// for each room in the game
 const uint8_t rooms[roomsSize][8] = {
 {
   0b11100111,
@@ -40,3 +46,5 @@ const uint8_t rooms[roomsSize][8] = {
   0b10000001,
   0b11100111
 }};
+
+#endif

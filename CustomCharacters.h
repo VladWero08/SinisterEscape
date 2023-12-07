@@ -1,3 +1,7 @@
+#pragma once
+#ifndef CUSTOM_CHARACTERS_H
+#define CUSTOM_CHARACTERS_H
+
 #include <LiquidCrystal.h>
 
 const byte skull[8] = {
@@ -68,3 +72,5 @@ void initializeCustomChars(LiquidCrystal &lcd) {
     lcd.createChar(i, customChars[i]);
   }
 }
+
+#endif

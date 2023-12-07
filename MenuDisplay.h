@@ -7,7 +7,11 @@
 const byte lcdBlinkingInterval = 500;
 bool displayBlinking = true;
 unsigned long lastBlinkingChar = 0;
-  
+
+/*
+  Display the given custom character, in the given 
+  position, depending on the blinking control variable
+*/
 void displayBlinkingInt(LiquidCrystal lcd, const int message, const int line, const int column){
     if ((millis() - lastBlinkingChar) > lcdBlinkingInterval) {
       displayBlinking = !displayBlinking;
@@ -23,6 +27,10 @@ void displayBlinkingInt(LiquidCrystal lcd, const int message, const int line, co
     }
 };
   
+/*
+  Display the given message, in the given 
+  position, depending on the blinking control variable
+*/
 void displayBlinkingChar(LiquidCrystal lcd, const char* message, const int line, const int column){
     if ((millis() - lastBlinkingChar) > lcdBlinkingInterval) {
       displayBlinking = !displayBlinking;
@@ -37,18 +45,21 @@ void displayBlinkingChar(LiquidCrystal lcd, const char* message, const int line,
       lcd.print(" ");
     }
 };
-
-void resetBlinkingVariables(){
-  displayBlinking = true;
-  lastBlinkingChar = millis();
-};
-
+  
+/*
+  Display the given message in the middle columns
+  of the LCD, knowing the LCD has 16 columns
+*/
 void displayMessageInCenter(LiquidCrystal lcd, const char* message,  const int line){
   int spaces = (16 - strlen(message)) / 2;
   lcd.setCursor(spaces, line);
   lcd.print(message);
 };
 
+/*
+  Display the given message in the middle columns
+  of the LCD, and besides the message ( left an right), a skull.
+*/
 void displayMessageInCenterWithSkull(LiquidCrystal lcd, const char* message,  const int line){
   int spaces = (16 - strlen(message)) / 2;
   int firstSkullPosition = spaces - 2;
@@ -61,8 +72,25 @@ void displayMessageInCenterWithSkull(LiquidCrystal lcd, const char* message,  co
   lcd.print(message);
 };
 
+/*
+  Reset the variables the variables that handle
+  the blinking of the character the cursor is pointing at
+*/
+void resetBlinkingVariables(){
+  displayBlinking = true;
+  lastBlinkingChar = millis();
+};
+
+/*
+  Display the sound settings menu, which shows 
+  the state of the sound (ON/OFF), an instruction about
+  how to toggle the setting and an exit symbol.
+
+  If the user is pointing to the exit symbol, 
+  it will be blinking, otherwise is just static.
+*/
 void displaySoundSetting(LiquidCrystal lcd, bool sound, bool exitIsBlinking){
-    // display the arrow at the beggining of the input
+  // display the arrow at the beggining of the input
   lcd.setCursor(0, 0);
   lcd.write((uint8_t) 1);
 
@@ -84,5 +112,22 @@ void displaySoundSetting(LiquidCrystal lcd, bool sound, bool exitIsBlinking){
 
   displayMessageInCenter(lcd, "Press to toggle!", 1);  
 }
+
+/*
+  Given an array of messages of a menu, and a index, display 
+  the current messages corresponding to the index. 
+  
+  Also, display an arrow pointing to the current option.
+*/
+void displayMenu(LiquidCrystal lcd, const char* menu[], int menuIndex, int arrowLinePosition){  
+  lcd.setCursor(0, arrowLinePosition);
+  lcd.write((uint8_t) 1);
+
+  lcd.setCursor(2, 0);
+  lcd.print(menu[menuIndex]);
+  
+  lcd.setCursor(2, 1);
+  lcd.print(menu[menuIndex + 1]);
+};
 
 #endif 

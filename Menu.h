@@ -1,10 +1,17 @@
+#pragma once
 #ifndef MENU_H
 #define MENU_h
 
+#include "EEPROM.h"
 #include <LiquidCrystal.h>
+#include <LedControl.h>
+
 #include "JoyStick.h"
 #include "MenuInput.h"
 #include "MenuDisplay.h"
+#include "Melody.h"
+#include "Rooms.h"
+#include "Utils.h"
 
 const byte mainMenuMessagesSize = 4;
 const char* mainMenuMessages[mainMenuMessagesSize] = {
@@ -32,43 +39,102 @@ const char* numbersAlphabet[numbersAlphabetSize] = {
   "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
 };
 
+const byte maximumHighscores = 3;
+
 struct Menu{
   LiquidCrystal lcd;
+  LedControl lc;
+  byte lcdBrightnessPin;
+  byte buzzerPin;
+
+  bool soundExitBlinking;
 
   bool sound;
-  bool soundExitBlinking;
+  byte lcdBrightness;
+  byte matrixBrightness;
+  unsigned int highscores[maximumHighscores];
 
   byte currentMenu;
   byte arrowMenuPosition;
-  byte arrowMenuLine;
+  byte arrowMenuLinePosition;
   byte currentMenuPosition;
 
   MenuInput menuInput;
 
-  Menu(byte RS, byte EN, byte D4, byte D5, byte D6, byte D7): lcd(RS, EN, D4, D5, D6, D7){    
-    sound = true;
-    soundExitBlinking = false;
+  Menu(byte RS, byte EN, byte D4, byte D5, byte D6, byte D7, byte dinPin, byte clockPin, byte loadPin, byte buzzerPin, byte lcdBrightnessPin): lcd(RS, EN, D4, D5, D6, D7), lc(dinPin, clockPin, loadPin, 1){    
+    loadMenuSettings();
+    activateMenuSettins();
 
+    for (int row = 0; row < 8; row++) {
+      lc.setRow(0, row, rooms[0][row]);
+    }
+
+    this->buzzerPin = buzzerPin;
+    this->lcdBrightnessPin = lcdBrightnessPin;
+
+    soundExitBlinking = false;
     currentMenu = 0;
     arrowMenuPosition = 0;
-    arrowMenuLine = 0;
+    arrowMenuLinePosition = 0;
     currentMenuPosition = 0; 
   }
 
-  void menuSwitch(Joystick joystick);
-  void menuWatcher(int maximumMenuSize, Joystick joystick);
-  void menuReset();
-  void displayMenu(const char * menu[]);
-
+  // functions to load and activate settings
+  void loadMenuSettings();
+  void activateMenuSettins();
+  
+  // functions related to the welcome message  
   void displayWelcomeMessage();
   void welcomeMessageHandler(Joystick joystick);
+
+  // functions related to the main menu
+  void menuSwitch(Joystick joystick);
+  void menuWatcher(int maximumMenuSize, Joystick joystick);
   void mainMenuHandler(Joystick joystick);
 
+  // functions related to the settings menu
   void settingsMenuHandler(Joystick joystick);
   void enterNameHandler(Joystick joystick);
   void lcdBrightnessMenuHandler(Joystick joystick);
   void matrixBrightnessMenuHandler(Joystick joystick);
   void soundToggleHandler(Joystick joystick);
+
+  // reset functions 
+  void resetMenu();
+  void resetUserInput(char* userInput[], byte userSize);
+};
+
+void Menu::loadMenuSettings(){
+  // load the LCD brightness setting
+  EEPROM.get(0, lcdBrightness);
+  // load the matrix brightness setting
+  EEPROM.get(1, matrixBrightness);
+  // load the sound setting
+  EEPROM.get(2, sound);
+  // load the highscores
+  for (int i = 0; i < maximumHighscores; i++) {
+    EEPROM.get(3 + 4 * i, highscores[i]);
+  }
+}
+
+void Menu::activateMenuSettins(){
+  // activate the LCD brightness setting
+  analogWrite(lcdBrightnessPin, lcdBrightness);
+  // activate the matrix brightness setting 
+  lc.shutdown(0, false);
+  lc.setIntensity(0, matrixBrightness);
+}
+
+void Menu::displayWelcomeMessage(){
+  displayMessageInCenter(lcd, "SinisterEscape", 0);
+  displayMessageInCenterWithSkull(lcd, "RUN", 1);
+};
+
+void Menu::welcomeMessageHandler(Joystick joystick){
+  if (joystick.currentSwitchStateChanged == HIGH) {
+    currentMenu = 1;
+    resetMenu();
+  }
 };
 
 void Menu::menuSwitch(Joystick joystick){
@@ -78,8 +144,9 @@ void Menu::menuSwitch(Joystick joystick){
       welcomeMessageHandler(joystick);
       break;
     case 1:
+      displayMenu(lcd, mainMenuMessages, currentMenuPosition, arrowMenuLinePosition);
+
       menuWatcher(mainMenuMessagesSize, joystick);
-      displayMenu(mainMenuMessages);
       mainMenuHandler(joystick);
       break;
     case 2:
@@ -87,8 +154,9 @@ void Menu::menuSwitch(Joystick joystick){
       break;
     case 3:
       // display settings menu
+      displayMenu(lcd, settingsMenu, currentMenuPosition, arrowMenuLinePosition);
+
       menuWatcher(settingsMenuSize, joystick);
-      displayMenu(settingsMenu);
       settingsMenuHandler(joystick);
       break;
     case 30:
@@ -113,6 +181,10 @@ void Menu::menuSwitch(Joystick joystick){
     default:
       break;
   }
+
+  if (sound) {
+    playMelody(buzzerPin, melodyNBC, durationsNBC);
+  }
 };
 
 void Menu::menuWatcher(int maximumMenuSize, Joystick joystick){
@@ -121,7 +193,7 @@ void Menu::menuWatcher(int maximumMenuSize, Joystick joystick){
     lcd.clear();
 
     // if the arrow is on line 0 of the LCD
-    if (arrowMenuLine == 0) {
+    if (arrowMenuLinePosition == 0) {
       // if the main menu is not pointing at 
       // the first option
       if (currentMenuPosition != 0) {
@@ -134,7 +206,7 @@ void Menu::menuWatcher(int maximumMenuSize, Joystick joystick){
       // move the arrow from the 
       // bottom line to the top line
       arrowMenuPosition -= 1;
-      arrowMenuLine = 0;
+      arrowMenuLinePosition = 0;
     }
   } 
   // joystick is pointing down 
@@ -142,9 +214,9 @@ void Menu::menuWatcher(int maximumMenuSize, Joystick joystick){
     lcd.clear();
     
     // if the arrow is on line 0 of the LCD
-    if (arrowMenuLine == 0){
+    if (arrowMenuLinePosition == 0){
       arrowMenuPosition += 1;
-      arrowMenuLine = 1;
+      arrowMenuLinePosition = 1;
     }
     // if the arrow is on line 1 of the LCD
     else {
@@ -155,38 +227,6 @@ void Menu::menuWatcher(int maximumMenuSize, Joystick joystick){
         currentMenuPosition += 1;
       }
     }
-  }
-};
-
-void Menu::menuReset(){
-  // reset the arrow and the variables that are 
-  // holding the current state of the menu
-  lcd.clear();
-  arrowMenuPosition = 0;
-  arrowMenuLine = 0;
-  currentMenuPosition = 0;
-};
-
-void Menu::displayMenu(const char* menu[]){  
-  lcd.setCursor(0, arrowMenuLine);
-  lcd.write((uint8_t) 1);
-
-  lcd.setCursor(2, 0);
-  lcd.print(menu[currentMenuPosition]);
-  
-  lcd.setCursor(2, 1);
-  lcd.print(menu[currentMenuPosition + 1]);
-};
-
-void Menu::displayWelcomeMessage(){
-  displayMessageInCenter(lcd, "SinisterEscape", 0);
-  displayMessageInCenterWithSkull(lcd, "RUN", 1);
-};
-
-void Menu::welcomeMessageHandler(Joystick joystick){
-  if (joystick.currentSwitchStateChanged == HIGH) {
-    currentMenu = 1;
-    menuReset();
   }
 };
 
@@ -216,7 +256,7 @@ void Menu::mainMenuHandler(Joystick joystick){
         break;
     }
     // reset the menu
-    menuReset();
+    resetMenu();
   }
 };
 
@@ -254,21 +294,30 @@ void Menu::settingsMenuHandler(Joystick joystick){
         break;
     }
     // reset the menu
-    menuReset();
+    resetMenu();
   }
 };
 
 void Menu::enterNameHandler(Joystick joystick){
   menuInput.userCursorLineHandler(lcd, joystick, letterAlphabet);
 
-  int returnToParentMenu = menuInput.joystickPressControlsHandler(lcd, joystick, usernameSize, username);
+  if (joystick.currentSwitchStateChanged == HIGH && menuInput.currentCursorLinePosition == 0) {
+    // if the user pressed the joystick and is pointing
+    // somewhere on the first lin
 
-  if (returnToParentMenu == 1) {
-    menuInput.resetInputVariables();
-    currentMenu = 3;
-    return;
+    if (menuInput.currentCursorColumnPosition == deletePosition) {
+      // if the user is pointing to the delete icon, 
+      // delete the user input
+      menuInput.currentInputCursorPosition = 0;
+      resetUserInput(username, usernameSize);
+    } else if (menuInput.currentCursorColumnPosition == verifyPosition || menuInput.currentCursorColumnPosition == exitPosition) {
+      // if the user is pointing to the verify / exit icon,
+      // clear the lcd and go to the parent menu
+      lcd.clear();
+      currentMenu = 3;
+      return;
+    }
   }
-
 
   if (menuInput.currentCursorLinePosition == 0) {
     menuInput.userInputControlsHandler(lcd, joystick);
@@ -276,17 +325,43 @@ void Menu::enterNameHandler(Joystick joystick){
     menuInput.userInputHandler(lcd, joystick, usernameSize, username, letterAlphabet);
     menuInput.userAlphabetHandler(lcd, joystick, letterAlphabet, 0, letterAlphabetSize);
   }
-}
+};
 
 void Menu::lcdBrightnessMenuHandler(Joystick joystick){
   menuInput.userCursorLineHandler(lcd, joystick, numbersAlphabet);
 
-  int returnToParentMenu = menuInput.joystickPressControlsHandler(lcd, joystick, brightnessNumberSize, brightnessNumber);
+  if (joystick.currentSwitchStateChanged == HIGH && menuInput.currentCursorLinePosition == 0) {
+    // if the user pressed the joystick and is pointing
+    // somewhere on the first lin
 
-  if (returnToParentMenu == 1) {
-    menuInput.resetInputVariables();
-    currentMenu = 3;
-    return;
+    if (menuInput.currentCursorColumnPosition == deletePosition) {
+      // if the user is pointing to the delete icon, 
+      // delete the user input
+      menuInput.currentInputCursorPosition = 0;
+      resetUserInput(brightnessNumber, brightnessNumberSize);
+    } else if (menuInput.currentCursorColumnPosition == verifyPosition) {
+      // if the user is pointing to the verify icon,
+      // try to transform the input to a byte
+      bool brightnessIsValid = saveCharAsByte(brightnessNumber, brightnessNumberSize, lcdBrightness);
+
+      if (brightnessIsValid) {
+        // if the brightness value was valid,
+        // save it to EEPROM
+        EEPROM.put(0, lcdBrightness);
+        analogWrite(lcdBrightnessPin, lcdBrightness);
+      }
+
+      // clear the lcd and go to the parent menu
+      lcd.clear();
+      currentMenu = 3;
+      return;
+    } else if (menuInput.currentCursorColumnPosition == exitPosition) {
+      // if the user is pointing to the exit icon,
+      // clear the lcd and go to the parent menu
+      lcd.clear();
+      currentMenu = 3;
+      return;
+    }
   }
 
   if (menuInput.currentCursorLinePosition == 0) {
@@ -300,12 +375,38 @@ void Menu::lcdBrightnessMenuHandler(Joystick joystick){
 void Menu::matrixBrightnessMenuHandler(Joystick joystick){
   menuInput.userCursorLineHandler(lcd, joystick, numbersAlphabet);
 
-  int returnToParentMenu = menuInput.joystickPressControlsHandler(lcd, joystick, brightnessNumberSize, brightnessNumber);
+  if (joystick.currentSwitchStateChanged == HIGH && menuInput.currentCursorLinePosition == 0) {
+    // if the user pressed the joystick and is pointing
+    // somewhere on the first lin
 
-  if (returnToParentMenu == 1) {
-    menuInput.resetInputVariables();
-    currentMenu = 3;
-    return;
+    if (menuInput.currentCursorColumnPosition == deletePosition) {
+      // if the user is pointing to the delete icon, 
+      // delete the user input
+      menuInput.currentInputCursorPosition = 0;
+      resetUserInput(brightnessNumber, brightnessNumberSize);
+    } else if (menuInput.currentCursorColumnPosition == verifyPosition) {
+      // if the user is pointing to the verify icon,
+      // try to transform the input to a byte
+      bool brightnessIsValid = saveCharAsByteMatrix(brightnessNumber, brightnessNumberSize, matrixBrightness);
+
+      if (brightnessIsValid) {
+        // if the brightness value was valid,
+        // save it to EEPROM
+        EEPROM.put(1, matrixBrightness);         
+        lc.setIntensity(0, matrixBrightness);
+      }
+
+      // clear the lcd and go to the parent menu
+      lcd.clear();
+      currentMenu = 3;
+      return;
+    } else if (menuInput.currentCursorColumnPosition == exitPosition) {
+      // if the user is pointing to the exit icon,
+      // clear the lcd and go to the parent menu
+      lcd.clear();
+      currentMenu = 3;
+      return;
+    }
   }
 
   if (menuInput.currentCursorLinePosition == 0) {
@@ -327,6 +428,7 @@ void Menu::soundToggleHandler(Joystick joystick){
 
   if (joystick.currentSwitchStateChanged == HIGH) {
     lcd.clear();
+    
     // if the joystick is pressed and the user
     // is pointing towards the exit, exit from the sound menu
     if (soundExitBlinking) {
@@ -336,10 +438,26 @@ void Menu::soundToggleHandler(Joystick joystick){
     // otherwise, toggle the sound buttton
     else {
       sound = !sound;
+      EEPROM.put(2, sound);
     }
   }
 
   displaySoundSetting(lcd, sound, soundExitBlinking);
-}
+};
+
+void Menu::resetMenu(){
+  // reset the arrow and the variables that are 
+  // holding the current state of the menu
+  lcd.clear();
+  arrowMenuPosition = 0;
+  arrowMenuLinePosition = 0;
+  currentMenuPosition = 0;
+};
+
+void Menu::resetUserInput(char* userInput[], byte userSize){
+  for (int i = 0; i < userSize; i++) {
+    userInput[i] = "X";
+  }
+};
 
 #endif

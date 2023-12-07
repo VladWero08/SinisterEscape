@@ -1,5 +1,10 @@
+#pragma once
+#ifndef MELODY_H
+#define MELODY_H
+
 #include "pitches.h"
 
+// melody from Nightmare before Christmas
 const int melodyNBC[] = {
   NOTE_C4, NOTE_C4,
   NOTE_G4, NOTE_G4,
@@ -25,6 +30,7 @@ const int melodyNBC[] = {
   NOTE_F4, REST, REST
 };
 
+// duration of each note in the melody of NBC
 const int durationsNBC[] = {
   2, 2,
   2, 2,
@@ -50,6 +56,11 @@ const int durationsNBC[] = {
   4, 4, 2
 };
 
+/*
+  Given the pin to which the buzzer is connected, a melody and
+  its notes durations, use the tone function to reproduce 
+  the melody, with a small delay between notes
+*/
 void playMelody(const byte buzzerPin, const int melody[], const int durations[]){
   int size = sizeof(durations) / sizeof(int);
 
@@ -58,8 +69,10 @@ void playMelody(const byte buzzerPin, const int melody[], const int durations[])
     tone(buzzerPin, melody[note], duration);
     
     int pauseBetweenNotes = duration * 1.30;
-    delay(pauseBetweenNotes);
+    // delay(pauseBetweenNotes);
 
     noTone(buzzerPin);
   }
 }
+
+#endif
