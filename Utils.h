@@ -46,6 +46,7 @@ bool saveCharAsByteMatrix(char* numberChar[], int numberSize, byte &targetVariab
 
   // transform the char number into a int
   numberInt = numberString.toInt();
+  Serial.println(numberInt);
 
   // exit if its not from the interval [0, 15]
   if (numberInt < 0 || numberInt > 15) {

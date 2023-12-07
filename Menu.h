@@ -5,6 +5,7 @@
 #include "EEPROM.h"
 #include <LiquidCrystal.h>
 #include <LedControl.h>
+#include <string.h>
 
 #include "JoyStick.h"
 #include "MenuInput.h"
@@ -101,7 +102,8 @@ struct Menu{
 
   // reset functions 
   void resetMenu();
-  void resetUserInput(char* userInput[], byte userSize);
+  void resetUserInput(char* userInput[], byte userInputSize);
+  byte setByteUserInput(byte number, char* userInput[]);
 };
 
 void Menu::loadMenuSettings(){
@@ -275,11 +277,19 @@ void Menu::settingsMenuHandler(Joystick joystick){
       case 1:
         // set the LCD brightness
         menuInput.resetInputVariables();
+
+        byte cursorPositionLCD = setByteUserInput(lcdBrightness, brightnessNumber);
+        menuInput.currentInputCursorPosition = cursorPositionLCD;
+
         currentMenu = 31;
         break;
       case 2:
         // set the matrix brightness
         menuInput.resetInputVariables();
+
+        byte cursorPositionMatrix = setByteUserInput(matrixBrightness, brightnessNumber);
+        menuInput.currentInputCursorPosition = cursorPositionMatrix;
+
         currentMenu = 32;
         break;
       case 3:
@@ -454,10 +464,25 @@ void Menu::resetMenu(){
   currentMenuPosition = 0;
 };
 
-void Menu::resetUserInput(char* userInput[], byte userSize){
-  for (int i = 0; i < userSize; i++) {
-    userInput[i] = "X";
+void Menu::resetUserInput(char* userInput[], byte userInputSize){
+  for (int i = 0; i < userInputSize; i++) {
+    // reset the value in the memory
+    userInput[i] = " ";
+
+    // reset the value visually, in the LCD
+    lcd.setCursor(userInputStartPosition + i, 0);
+    lcd.print(userInput[i]);
   }
 };
+
+byte Menu::setByteUserInput(byte number, char* userInput[]){
+  String numberString = String(number);
+  Serial.println(numberString.length());
+  for (int i = 0; i < numberString.length(); i++) {
+    userInput[i] = strdup(numberString.substring(i, i + 1).c_str());
+  }
+
+  return (byte) numberString.length();
+}
 
 #endif
