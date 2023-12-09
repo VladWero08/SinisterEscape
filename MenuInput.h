@@ -8,7 +8,7 @@
 
 const byte arrowPosition = 0;
 const byte userInputStartPosition = 2;
-const byte deletePosition = 12;
+const byte deletePosition = 11;
 const byte verifyPosition = 13;
 const byte exitPosition = 15;
 
@@ -32,6 +32,7 @@ struct MenuInput{
   } 
 
   void userInputHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[], const char* userAlphabet[]);
+  void displayUserInput(LiquidCrystal lcd, const char* userInput[]);
   void userAlphabetHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[], const int leftBoundary, const int rightBoundary);
   void userInputControlsHandler(LiquidCrystal lcd, Joystick joystick);
   int joystickPressControlsHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[]);
@@ -77,12 +78,16 @@ void MenuInput::userInputHandler(LiquidCrystal lcd, Joystick joystick, const int
     }
   }
   
+  displayUserInput(lcd, userInput);
+};
+
+void MenuInput::displayUserInput(LiquidCrystal lcd, const char* userInput[]){
   // display the user input
   for (int i = 0; i < currentInputCursorPosition; i++) {
     lcd.setCursor(userInputStartPosition + i, 0);
     lcd.print(userInput[i]);
   }
-};
+}
 
 /*
   Listen to the joystick movement. Depending on
@@ -277,5 +282,6 @@ void MenuInput::resetInputVariables(){
     currentInputCursorPosition = 0;
     alphabetPositionBoundary = 0;
 };
+
 
 #endif

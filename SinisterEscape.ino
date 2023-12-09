@@ -58,5 +58,13 @@ void loop() {
   joystick.movementHandler();
  
   menu.menuSwitch(joystick);
+
+  for (int i = 0; i < 3; i++) {
+    Serial.print(username[i]);
+  }
+  Serial.print(" ");
+  Serial.print(usernameCompletedSize);
+  Serial.println();
 }
+
 

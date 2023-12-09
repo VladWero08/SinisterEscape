@@ -135,7 +135,7 @@ void displayMenu(LiquidCrystal lcd, const char* menu[], int menuIndex, int arrow
   display the ranking symbol, the name and the score of the players
   on each line of the LCD.
 */
-void displayHighscores(LiquidCrystal lcd, const char* playerNames[], const int scores[], int maxPlayers, int menuIndex, int arrowLinePosition) {
+void displayHighscores(LiquidCrystal lcd, const char* playerNames[], const unsigned long scores[], int maxPlayers, int menuIndex, int arrowLinePosition) {
   lcd.setCursor(0, arrowLinePosition);
   lcd.write((uint8_t) 1);
 

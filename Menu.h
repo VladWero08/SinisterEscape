@@ -48,6 +48,7 @@ const char* aboutMenu[20] = {
   "Back",
 };
 
+byte usernameCompletedSize;
 const byte usernameSize = 3;
 char* username[usernameSize] = {"", "", ""}; 
 
@@ -64,6 +65,9 @@ const char* numbersAlphabet[numbersAlphabetSize] = {
   "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
 };
 
+const byte playerNamesStartAddr = 3;
+const byte highschoreStartAddr = 6;
+
 const byte maximumHighscores = 3;
 
 struct Menu{
@@ -77,7 +81,8 @@ struct Menu{
   bool sound;
   byte lcdBrightness;
   byte matrixBrightness;
-  unsigned int highscores[maximumHighscores];
+  unsigned long highscores[maximumHighscores];
+  char* playerNames[maximumHighscores];
 
   byte currentMenu;
   byte arrowMenuPosition;
@@ -88,11 +93,8 @@ struct Menu{
 
   Menu(byte RS, byte EN, byte D4, byte D5, byte D6, byte D7, byte dinPin, byte clockPin, byte loadPin, byte buzzerPin, byte lcdBrightnessPin): lcd(RS, EN, D4, D5, D6, D7), lc(dinPin, clockPin, loadPin, 1){    
     loadMenuSettings();
+    loadPlayersHighschores();
     activateMenuSettins();
-
-    for (int row = 0; row < 8; row++) {
-      lc.setRow(0, row, rooms[0][row]);
-    }
 
     this->buzzerPin = buzzerPin;
     this->lcdBrightnessPin = lcdBrightnessPin;
@@ -106,6 +108,7 @@ struct Menu{
 
   // functions to load and activate settings
   void loadMenuSettings();
+  void loadPlayersHighschores();
   void activateMenuSettins();
   
   // functions related to the welcome message  
@@ -149,6 +152,25 @@ void Menu::loadMenuSettings(){
   }
 };
 
+void Menu::loadPlayersHighschores(){
+  for (int score = 0; score < maximumHighscores; score++) {
+    // read the ith score and the player's name who 
+    // made that score
+
+    char playerName[4];
+    // player names are made of 3 characters
+    for (int letter = 0; letter < 3; letter++) {
+      EEPROM.get(playerNamesStartAddr + score * 7 + letter, playerName[letter]);
+    }
+    // add the null character at the end
+    playerName[3] = '\0';
+    // copy the value into the array of player names
+    playerNames[score] = strdup(playerName);
+    
+    EEPROM.get(highschoreStartAddr + score * 7, highscores[score]);
+  }  
+};
+
 void Menu::activateMenuSettins(){
   // activate the LCD brightness setting
   analogWrite(lcdBrightnessPin, lcdBrightness);
@@ -171,8 +193,7 @@ void Menu::welcomeMessageHandler(Joystick joystick){
   }
 };
 
-const char* players[] = {"MDB", "MDB", "MDB"};
-const int scores[] = {1000, 1000, 1000};
+
 
 void Menu::menuSwitch(Joystick joystick){
   switch (currentMenu) {
@@ -188,7 +209,7 @@ void Menu::menuSwitch(Joystick joystick){
       break;
     case 2:
       // display highscores
-      displayHighscores(lcd, players, scores, 3, currentMenuPosition, arrowMenuLinePosition);
+      displayHighscores(lcd, playerNames, highscores, 3, currentMenuPosition, arrowMenuLinePosition);
 
       menuWatcher(4, joystick);
       highscoresMenuHandler(joystick);
@@ -336,6 +357,8 @@ void Menu::settingsMenuHandler(Joystick joystick){
       case 0:
         // enter the name
         menuInput.resetInputVariables();
+        menuInput.currentInputCursorPosition = usernameCompletedSize;
+
         currentMenu = 30;
         break;
       case 1:
@@ -374,14 +397,24 @@ void Menu::enterNameHandler(Joystick joystick){
   if (joystick.currentSwitchStateChanged == HIGH && menuInput.currentCursorLinePosition == 0) {
     // if the user pressed the joystick and is pointing
     // somewhere on the first lin
-
+    
     if (menuInput.currentCursorColumnPosition == deletePosition) {
       // if the user is pointing to the delete icon, 
       // delete the user input
+      
       menuInput.currentInputCursorPosition = 0;
       resetUserInput(username, usernameSize);
-    } else if (menuInput.currentCursorColumnPosition == verifyPosition || menuInput.currentCursorColumnPosition == exitPosition) {
-      // if the user is pointing to the verify / exit icon,
+    } else if (menuInput.currentCursorColumnPosition == verifyPosition) {
+      // if the user is pointing to the exit icon,
+      // set the username's completed size 
+      usernameCompletedSize = menuInput.currentInputCursorPosition;
+      
+      // clear the lcd and go to the parent menu
+      lcd.clear();
+      currentMenu = 3;
+      return;
+    } else if (menuInput.currentCursorColumnPosition == exitPosition) {
+      // if the user is pointing to the exit icon,
       // clear the lcd and go to the parent menu
       lcd.clear();
       currentMenu = 3;
