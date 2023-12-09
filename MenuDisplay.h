@@ -3,6 +3,7 @@
 #define MENU_DISPLAY_h
 
 #include "LiquidCrystal.h"
+#include "CustomCharacters.h"
 
 const byte lcdBlinkingInterval = 500;
 bool displayBlinking = true;
@@ -65,8 +66,8 @@ void displayMessageInCenterWithSkull(LiquidCrystal lcd, const char* message,  co
   int firstSkullPosition = spaces - 2;
   int secondSkullPosition = spaces + strlen(message) + 2 - 1;
 
-  displayBlinkingInt(lcd, (uint8_t) 0, line, firstSkullPosition);
-  displayBlinkingInt(lcd, (uint8_t) 0, line, secondSkullPosition);
+  displayBlinkingInt(lcd, skullIndex, line, firstSkullPosition);
+  displayBlinkingInt(lcd, skullIndex, line, secondSkullPosition);
 
   lcd.setCursor(spaces, line);
   lcd.print(message);
@@ -92,7 +93,7 @@ void resetBlinkingVariables(){
 void displaySoundSetting(LiquidCrystal lcd, bool sound, bool exitIsBlinking){
   // display the arrow at the beggining of the input
   lcd.setCursor(0, 0);
-  lcd.write((uint8_t) 1);
+  lcd.write(arrowIndex);
 
   if (exitIsBlinking) {
     // display the exit symbol blinking
@@ -100,7 +101,7 @@ void displaySoundSetting(LiquidCrystal lcd, bool sound, bool exitIsBlinking){
   } else {
     // display the exit symbol
     lcd.setCursor(15, 0);
-    lcd.write((uint8_t) 4);
+    lcd.write(exitIndex);
   }
 
   lcd.setCursor(2, 0);
@@ -121,7 +122,7 @@ void displaySoundSetting(LiquidCrystal lcd, bool sound, bool exitIsBlinking){
 */
 void displayMenu(LiquidCrystal lcd, const char* menu[], int menuIndex, int arrowLinePosition){  
   lcd.setCursor(0, arrowLinePosition);
-  lcd.write((uint8_t) 1);
+  lcd.write(arrowIndex);
 
   lcd.setCursor(2, 0);
   lcd.print(menu[menuIndex]);
@@ -137,13 +138,13 @@ void displayMenu(LiquidCrystal lcd, const char* menu[], int menuIndex, int arrow
 */
 void displayHighscores(LiquidCrystal lcd, const char* playerNames[], const unsigned long scores[], int maxPlayers, int menuIndex, int arrowLinePosition) {
   lcd.setCursor(0, arrowLinePosition);
-  lcd.write((uint8_t) 1);
+  lcd.write(arrowIndex);
 
   if (menuIndex < maxPlayers - 1) {
       for (int i = 0; i < 2; i++) {
       // display the symbol for the podium
       lcd.setCursor(2, i);
-      lcd.write((uint8_t) 5 + menuIndex + i);
+      lcd.write(placeStartingIndex + menuIndex + i);
 
       // display the name of the player
       lcd.setCursor(4, i);
@@ -156,7 +157,7 @@ void displayHighscores(LiquidCrystal lcd, const char* playerNames[], const unsig
   } else {
       // display the symbol for the podium
       lcd.setCursor(2, 0);
-      lcd.write((uint8_t) 5 + menuIndex);
+      lcd.write(placeStartingIndex + menuIndex);
 
       // display the name of the player
       lcd.setCursor(4, 0);

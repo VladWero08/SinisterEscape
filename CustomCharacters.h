@@ -14,6 +14,7 @@ const byte skull[8] = {
   0b01110,
   0b01110
 };
+const uint8_t skullIndex = (uint8_t) 0;
 
 const byte arrow[8] = {
 	0b00000,
@@ -25,6 +26,7 @@ const byte arrow[8] = {
 	0b00000,
 	0b00000
 };
+const uint8_t arrowIndex = (uint8_t) 1;
 
 const byte verify[8] = {
 	0b00000,
@@ -36,6 +38,7 @@ const byte verify[8] = {
 	0b01000,
 	0b00000
 };
+const uint8_t verifyIndex = (uint8_t) 2;
 
 const byte deleteX[8] = {
 	0b00000,
@@ -47,6 +50,7 @@ const byte deleteX[8] = {
 	0b10001,
 	0b00000
 };
+const uint8_t deleteIndex = (uint8_t) 3;
 
 const byte exitArrow[8] = {
 	0b11110,
@@ -58,7 +62,9 @@ const byte exitArrow[8] = {
 	0b00010,
 	0b01100
 };
+const uint8_t exitIndex = (uint8_t) 4;
 
+const byte placeStartingIndex = 5;
 const byte firstPlace[8] = {
 	0b00010,
 	0b00110,
@@ -69,6 +75,7 @@ const byte firstPlace[8] = {
 	0b00010,
 	0b00010
 };
+const uint8_t firstPlaceIndex = (uint8_t) 5;
 
 const byte secondPlace[8] = {
 	0b01110,
@@ -80,6 +87,7 @@ const byte secondPlace[8] = {
 	0b10000,
 	0b11111
 };
+const uint8_t secondPlaceIndex = (uint8_t) 6;
 
 const byte thirdPlace[8] = {
 	0b01110,
@@ -91,6 +99,7 @@ const byte thirdPlace[8] = {
 	0b10001,
 	0b01110
 };
+const uint8_t thirdPlaceIndex = (uint8_t) 5;
 
 // number of custom characters that will be created
 const byte numberOfCustomChars = 8;
@@ -98,13 +107,17 @@ const byte numberOfCustomChars = 8;
 const byte *customChars[numberOfCustomChars] = {
   skull, arrow, deleteX, verify, exitArrow, firstPlace, secondPlace, thirdPlace
 };
+// array with each custom character's index
+const uint8_t customCharsIndexes[numberOfCustomChars] = {
+  skullIndex, arrowIndex, deleteIndex, verifyIndex, exitIndex, firstPlaceIndex, secondPlaceIndex, thirdPlaceIndex
+};
 
 /*
   Create each character that has been declared.
 */
 void initializeCustomChars(LiquidCrystal &lcd) {
   for (int i = 0; i < numberOfCustomChars; i++) {
-    lcd.createChar(i, customChars[i]);
+    lcd.createChar(customCharsIndexes[i], customChars[i]);
   }
 }
 

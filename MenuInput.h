@@ -5,6 +5,7 @@
 #include "LiquidCrystal.h"
 #include "JoyStick.h"
 #include "MenuDisplay.h"
+#include "CustomCharacters.h"
 
 const byte arrowPosition = 0;
 const byte userInputStartPosition = 2;
@@ -54,19 +55,19 @@ struct MenuInput{
 void MenuInput::userInputHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[], const char* userAlphabet[]) {
   // display the arrow at the beggining of the input
   lcd.setCursor(arrowPosition, 0);
-  lcd.write((uint8_t) 1);
+  lcd.write(arrowIndex);
 
   // display the delete symbol
   lcd.setCursor(deletePosition, 0);
-  lcd.write((uint8_t) 2);
+  lcd.write(deleteIndex);
 
   // display the verify symbol 
   lcd.setCursor(verifyPosition, 0);
-  lcd.write((uint8_t) 3);
+  lcd.write(verifyIndex);
 
   // display the exit symbol
   lcd.setCursor(exitPosition, 0);
-  lcd.write((uint8_t) 4);
+  lcd.write(exitIndex);
 
   // if the input has not reached the maximum size
   if (currentInputCursorPosition < maxInput) {
@@ -158,30 +159,30 @@ void MenuInput::userInputControlsHandler(LiquidCrystal lcd, Joystick joystick){
       displayBlinkingInt(lcd, 2, currentCursorLinePosition, currentCursorColumnPosition);
 
       lcd.setCursor(verifyPosition, currentCursorLinePosition);
-      lcd.write((uint8_t) 3);
+      lcd.write(verifyIndex);
       
       lcd.setCursor(exitPosition, currentCursorLinePosition);
-      lcd.write((uint8_t) 4);
+      lcd.write(exitIndex);
       break;
     
     case verifyPosition:
       displayBlinkingInt(lcd, 3, currentCursorLinePosition, currentCursorColumnPosition);
       
       lcd.setCursor(deletePosition, currentCursorLinePosition);
-      lcd.write((uint8_t) 2);
+      lcd.write(deleteIndex);
       
       lcd.setCursor(exitPosition, currentCursorLinePosition);
-      lcd.write((uint8_t) 4);
+      lcd.write(exitIndex);
       break;
 
     case exitPosition:
       displayBlinkingInt(lcd, 4, currentCursorLinePosition, currentCursorColumnPosition);
 
       lcd.setCursor(deletePosition, currentCursorLinePosition);
-      lcd.write((uint8_t) 2);
+      lcd.write(deleteIndex);
 
       lcd.setCursor(verifyPosition, currentCursorLinePosition);
-      lcd.write((uint8_t) 3);      
+      lcd.write(verifyIndex);      
       break;
 
     default:
@@ -255,13 +256,13 @@ void MenuInput::userCursorLineHandler(LiquidCrystal lcd, Joystick joystick, cons
 
     switch (currentCursorColumnPosition) {
       case deletePosition:
-        lcd.write((uint8_t) 2);
+        lcd.write(deleteIndex);
         break;      
       case verifyPosition:
-        lcd.write((uint8_t) 3);
+        lcd.write(verifyIndex);
         break;
       case exitPosition:
-        lcd.write((uint8_t) 4);      
+        lcd.write(exitIndex);      
         break;
       default:
         break;
