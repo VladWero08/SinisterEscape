@@ -6,9 +6,9 @@
 
 3) [2] 	-> 1 byte for sound: ON/OFF
 
-4) [3, 6],  -
-   [7, 10], -> the last 3 highscores, values in seconds
-   [11, 14] - 
+4) 	Name		Score 
 
-5) [15, 18] - current user playing the game
+1st   	[3, 5]		[5, 8]		
+2nd   	[9, 11]		[12, 14]
+3rd   	[15, 17]	[18, 22] 
 

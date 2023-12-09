@@ -105,9 +105,9 @@ void displaySoundSetting(LiquidCrystal lcd, bool sound, bool exitIsBlinking){
 
   lcd.setCursor(2, 0);
   if (sound) {
-    lcd.print("Sound is ON!");
+    lcd.print("Sound ON!");
   } else {
-    lcd.print("Sound is OFF!");
+    lcd.print("Sound OFF!");
   }
 
   displayMessageInCenter(lcd, "Press to toggle!", 1);  
@@ -128,6 +128,47 @@ void displayMenu(LiquidCrystal lcd, const char* menu[], int menuIndex, int arrow
   
   lcd.setCursor(2, 1);
   lcd.print(menu[menuIndex + 1]);
+};
+
+/*
+  Given an array of player names, their scores, and a index,
+  display the ranking symbol, the name and the score of the players
+  on each line of the LCD.
+*/
+void displayHighscores(LiquidCrystal lcd, const char* playerNames[], const int scores[], int maxPlayers, int menuIndex, int arrowLinePosition) {
+  lcd.setCursor(0, arrowLinePosition);
+  lcd.write((uint8_t) 1);
+
+  if (menuIndex < maxPlayers - 1) {
+      for (int i = 0; i < 2; i++) {
+      // display the symbol for the podium
+      lcd.setCursor(2, i);
+      lcd.write((uint8_t) 5 + menuIndex + i);
+
+      // display the name of the player
+      lcd.setCursor(4, i);
+      lcd.print(playerNames[menuIndex + i]);
+      
+      // display the score of the player
+      lcd.setCursor(8, i);
+      lcd.print(scores[menuIndex + i]);
+    }
+  } else {
+      // display the symbol for the podium
+      lcd.setCursor(2, 0);
+      lcd.write((uint8_t) 5 + menuIndex);
+
+      // display the name of the player
+      lcd.setCursor(4, 0);
+      lcd.print(playerNames[menuIndex]);
+      
+      // display the score of the player
+      lcd.setCursor(8, 0);
+      lcd.print(scores[menuIndex]);
+
+      lcd.setCursor(2, 1);
+      lcd.print("Back");
+  }
 };
 
 #endif 

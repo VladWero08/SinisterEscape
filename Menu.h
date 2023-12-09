@@ -24,6 +24,30 @@ const char* settingsMenu[settingsMenuSize] = {
   "Enter name", "LCD bright", "Matrix bright", "Sound", "Back"
 };
 
+const byte aboutMenuSize = 20;
+const char* aboutMenu[20] = {
+  "SinisterEscape",
+  "run through",
+  "linked rooms,",
+  "collecting 5",
+  "crucical notes",
+  "that hold the",
+  "key to your",
+  "escape...",
+  "Be wary of",
+  "Dr. Nocturne's",
+  "relentless",
+  "pursuit.",
+  "He will",
+  "follow and try",
+  "to kill you.",
+  "",
+  "Creator:",
+  "VladWero08",
+  "",
+  "Back",
+};
+
 const byte usernameSize = 3;
 char* username[usernameSize] = {"", "", ""}; 
 
@@ -93,12 +117,18 @@ struct Menu{
   void menuWatcher(int maximumMenuSize, Joystick joystick);
   void mainMenuHandler(Joystick joystick);
 
+  // funtions related to the highscores menu
+  void highscoresMenuHandler(Joystick joystick);
+
   // functions related to the settings menu
   void settingsMenuHandler(Joystick joystick);
   void enterNameHandler(Joystick joystick);
   void lcdBrightnessMenuHandler(Joystick joystick);
   void matrixBrightnessMenuHandler(Joystick joystick);
   void soundToggleHandler(Joystick joystick);
+
+  // functions related to about menu
+  void aboutMenuHandler(Joystick joystick);
 
   // reset functions 
   void resetMenu();
@@ -117,7 +147,7 @@ void Menu::loadMenuSettings(){
   for (int i = 0; i < maximumHighscores; i++) {
     EEPROM.get(3 + 4 * i, highscores[i]);
   }
-}
+};
 
 void Menu::activateMenuSettins(){
   // activate the LCD brightness setting
@@ -125,7 +155,9 @@ void Menu::activateMenuSettins(){
   // activate the matrix brightness setting 
   lc.shutdown(0, false);
   lc.setIntensity(0, matrixBrightness);
-}
+};
+
+
 
 void Menu::displayWelcomeMessage(){
   displayMessageInCenter(lcd, "SinisterEscape", 0);
@@ -138,6 +170,9 @@ void Menu::welcomeMessageHandler(Joystick joystick){
     resetMenu();
   }
 };
+
+const char* players[] = {"MDB", "MDB", "MDB"};
+const int scores[] = {1000, 1000, 1000};
 
 void Menu::menuSwitch(Joystick joystick){
   switch (currentMenu) {
@@ -153,6 +188,10 @@ void Menu::menuSwitch(Joystick joystick){
       break;
     case 2:
       // display highscores
+      displayHighscores(lcd, players, scores, 3, currentMenuPosition, arrowMenuLinePosition);
+
+      menuWatcher(4, joystick);
+      highscoresMenuHandler(joystick);
       break;
     case 3:
       // display settings menu
@@ -179,6 +218,10 @@ void Menu::menuSwitch(Joystick joystick){
       break;
     case 4:
       // display about
+      displayMenu(lcd, aboutMenu, currentMenuPosition, arrowMenuLinePosition);
+      
+      menuWatcher(aboutMenuSize, joystick);
+      aboutMenuHandler(joystick);
       break;
     default:
       break;
@@ -262,9 +305,30 @@ void Menu::mainMenuHandler(Joystick joystick){
   }
 };
 
+
+void Menu::highscoresMenuHandler(Joystick joystick){
+  // handle the button press when the
+  // user is in the highscores menu
+  if (joystick.currentSwitchStateChanged == HIGH) {
+    // depending where the user is pointing,
+    // handle each individual case
+    switch (arrowMenuPosition) {
+      case 3:
+        // go back to the main menu
+        currentMenu = 1;
+        break;
+      default:
+        break;
+    }
+    // reset the menu
+    resetMenu();
+  }
+};
+
+
 void Menu::settingsMenuHandler(Joystick joystick){
   // handle the button press when the
-  // user is in the main menu
+  // user is in the settings menu
   if (joystick.currentSwitchStateChanged == HIGH) {
     // depending where the user is pointing,
     // handle each individual case
@@ -277,18 +341,14 @@ void Menu::settingsMenuHandler(Joystick joystick){
       case 1:
         // set the LCD brightness
         menuInput.resetInputVariables();
-
-        byte cursorPositionLCD = setByteUserInput(lcdBrightness, brightnessNumber);
-        menuInput.currentInputCursorPosition = cursorPositionLCD;
+        menuInput.currentInputCursorPosition = setByteUserInput(lcdBrightness, brightnessNumber);;
 
         currentMenu = 31;
         break;
       case 2:
         // set the matrix brightness
         menuInput.resetInputVariables();
-
-        byte cursorPositionMatrix = setByteUserInput(matrixBrightness, brightnessNumber);
-        menuInput.currentInputCursorPosition = cursorPositionMatrix;
+        menuInput.currentInputCursorPosition = setByteUserInput(matrixBrightness, brightnessNumber);
 
         currentMenu = 32;
         break;
@@ -455,6 +515,28 @@ void Menu::soundToggleHandler(Joystick joystick){
   displaySoundSetting(lcd, sound, soundExitBlinking);
 };
 
+
+
+void Menu::aboutMenuHandler(Joystick joystick){
+  // handle the button press when the
+  // user is in the about menu
+  if (joystick.currentSwitchStateChanged == HIGH) {
+    // depending where the user is pointing,
+    // handle each individual case
+    switch (arrowMenuPosition) {
+      case aboutMenuSize - 1:
+        // switch back to the main menu
+        currentMenu = 1;
+        // reset the menu
+        resetMenu();
+      default:
+        break;
+    }
+  }
+};
+
+
+
 void Menu::resetMenu(){
   // reset the arrow and the variables that are 
   // holding the current state of the menu
@@ -477,12 +559,11 @@ void Menu::resetUserInput(char* userInput[], byte userInputSize){
 
 byte Menu::setByteUserInput(byte number, char* userInput[]){
   String numberString = String(number);
-  Serial.println(numberString.length());
   for (int i = 0; i < numberString.length(); i++) {
     userInput[i] = strdup(numberString.substring(i, i + 1).c_str());
   }
 
   return (byte) numberString.length();
-}
+};
 
 #endif
