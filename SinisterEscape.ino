@@ -42,8 +42,6 @@ void setup() {
   
   // set brightness pin for LCD
   pinMode(brightnessPin, OUTPUT);
-  analogWrite(brightnessPin, 100);
-
   // initialize the customized characters for the LCD
   initializeCustomChars(menu.lcd);
   // set up the LCD's number of columns and rows
@@ -52,16 +50,21 @@ void setup() {
   // set the buzzer pin
   pinMode(buzzerPin, OUTPUT);
 
+  // set the seed for randomness
+  randomSeed(analogRead(0));
+
   Serial.begin(9600);
 }
 
 void loop() {
-  // joystick.switchHandler();
-  // joystick.movementHandler();
+  joystick.switchHandler();
+  joystick.movementHandler();
  
   // menu.menuSwitch(joystick);
-  player.positionWatcher(joystick);
-  player.display(menu.lc);
+
+  setRoom(menu.lc, player.currentRoom);
+  player.positionWatcher(menu.lc, joystick);
+  player.setPlayerPosition(menu.lc);
 }
 
 
