@@ -60,7 +60,7 @@ const byte exitArrow[8] = {
 	0b00001,
 	0b00001,
 	0b00010,
-	0b01100
+	0b00000
 };
 const uint8_t exitIndex = (uint8_t) 4;
 
@@ -99,17 +99,17 @@ const byte thirdPlace[8] = {
 	0b10001,
 	0b01110
 };
-const uint8_t thirdPlaceIndex = (uint8_t) 5;
+const uint8_t thirdPlaceIndex = (uint8_t) 7;
 
 // number of custom characters that will be created
 const byte numberOfCustomChars = 8;
 // array with all custom characters
 const byte *customChars[numberOfCustomChars] = {
-  skull, arrow, deleteX, verify, exitArrow, firstPlace, secondPlace, thirdPlace
+  skull, arrow, verify, deleteX, exitArrow, firstPlace, secondPlace, thirdPlace
 };
 // array with each custom character's index
 const uint8_t customCharsIndexes[numberOfCustomChars] = {
-  skullIndex, arrowIndex, deleteIndex, verifyIndex, exitIndex, firstPlaceIndex, secondPlaceIndex, thirdPlaceIndex
+  skullIndex, arrowIndex, verifyIndex, deleteIndex, exitIndex, firstPlaceIndex, secondPlaceIndex, thirdPlaceIndex
 };
 
 /*

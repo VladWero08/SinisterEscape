@@ -156,7 +156,7 @@ void MenuInput::userInputControlsHandler(LiquidCrystal lcd, Joystick joystick){
 
   switch (currentCursorColumnPosition) {
     case deletePosition:
-      displayBlinkingInt(lcd, 2, currentCursorLinePosition, currentCursorColumnPosition);
+      displayBlinkingInt(lcd, deleteIndex, currentCursorLinePosition, currentCursorColumnPosition);
 
       lcd.setCursor(verifyPosition, currentCursorLinePosition);
       lcd.write(verifyIndex);
@@ -166,7 +166,7 @@ void MenuInput::userInputControlsHandler(LiquidCrystal lcd, Joystick joystick){
       break;
     
     case verifyPosition:
-      displayBlinkingInt(lcd, 3, currentCursorLinePosition, currentCursorColumnPosition);
+      displayBlinkingInt(lcd, verifyIndex, currentCursorLinePosition, currentCursorColumnPosition);
       
       lcd.setCursor(deletePosition, currentCursorLinePosition);
       lcd.write(deleteIndex);
@@ -176,13 +176,13 @@ void MenuInput::userInputControlsHandler(LiquidCrystal lcd, Joystick joystick){
       break;
 
     case exitPosition:
-      displayBlinkingInt(lcd, 4, currentCursorLinePosition, currentCursorColumnPosition);
-
-      lcd.setCursor(deletePosition, currentCursorLinePosition);
-      lcd.write(deleteIndex);
+      displayBlinkingInt(lcd, exitIndex, currentCursorLinePosition, currentCursorColumnPosition);
 
       lcd.setCursor(verifyPosition, currentCursorLinePosition);
-      lcd.write(verifyIndex);      
+      lcd.write(verifyIndex);   
+
+      lcd.setCursor(deletePosition, currentCursorLinePosition);
+      lcd.write(deleteIndex);   
       break;
 
     default:
