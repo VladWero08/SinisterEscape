@@ -2,10 +2,11 @@
 #ifndef MENU_H
 #define MENU_h
 
-#include "EEPROM.h"
 #include <LiquidCrystal.h>
 #include <LedControl.h>
 #include <string.h>
+
+#include "EEPROM.h"
 
 #include "JoyStick.h"
 #include "MenuInput.h"
@@ -98,6 +99,9 @@ struct Menu{
 
     this->buzzerPin = buzzerPin;
     this->lcdBrightnessPin = lcdBrightnessPin;
+
+    lc.shutdown(0, false);
+    lc.clearDisplay(0);
 
     soundExitBlinking = false;
     currentMenu = 0;

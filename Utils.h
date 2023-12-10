@@ -2,6 +2,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <LiquidCrystal.h>
+
 /*
   Given an array of chars, concatenate (from index 0 to nth) 
   them to form a number. If the number is from the [0, 255] interval,
@@ -28,7 +30,7 @@ bool saveCharAsByte(char* numberChar[], int numberSize, byte &targetVariable){
   targetVariable = (byte) numberInt;
   
   return true;
-}
+};
 
 /*
   Given an array of chars, concatenate (from index 0 to nth) 
@@ -57,6 +59,36 @@ bool saveCharAsByteMatrix(char* numberChar[], int numberSize, byte &targetVariab
   targetVariable = (byte) numberInt;
   
   return true;
-}
+};
+
+void displayTimeFromSeconds(LiquidCrystal lcd, const unsigned int time, const byte column, const byte line) {
+  unsigned int minutes = time / 60;
+  unsigned int seconds = time % 60;
+
+  if (minutes < 10) {
+    lcd.setCursor(column, line);
+    lcd.print("0");
+
+    lcd.setCursor(column + 1, line);
+    lcd.print(minutes);
+  } else {
+    lcd.setCursor(column, line);
+    lcd.print(minutes);
+  }
+
+  lcd.setCursor(column + 2, line);
+  lcd.print(":");
+
+  if (seconds < 10) {
+    lcd.setCursor(column + 3, line);
+    lcd.print("0");
+
+    lcd.setCursor(column + 4, line);
+    lcd.print(seconds);
+  } else {
+    lcd.setCursor(column + 3, line);
+    lcd.print(seconds);
+  }
+};
 
 #endif

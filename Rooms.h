@@ -74,7 +74,7 @@ const byte roomsCommunication[roomsSize][directions] = {
 /*
   Given one of the rooms, display it
 */
-void setRoom(LedControl lc, int room){
+void setRoom(LedControl &lc, int room){
   for (int row = 0; row < matrixSize; row++) {
     for (int col = 0; col < matrixSize; col++) {
       lc.setLed(0, row, col, rooms[room][row][col]);
