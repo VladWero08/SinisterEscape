@@ -9,7 +9,9 @@
 const byte heartsStartPosition = 13;
 
 struct MenuGame{
+  // time since the game started
   unsigned int time;
+  // last time when the time was incremented
   unsigned long lastTimeIncrement;
   byte notes;
   byte lives;
@@ -26,6 +28,9 @@ struct MenuGame{
   void resetMenuGame();
 };
 
+/*
+  Display the whole game menu
+*/
 void MenuGame::display(LiquidCrystal lcd){
   displayLives(lcd);
   displayNotes(lcd);
@@ -43,11 +48,14 @@ void MenuGame::displayNotes(LiquidCrystal lcd){
   lcd.setCursor(0, 0);
   lcd.print("Notes: ");
 
+  // 7 is the length of "Notes "
   lcd.setCursor(7, 0);
   lcd.print(notes);
 };
 
 void MenuGame::displayTime(LiquidCrystal lcd){
+  // if a 1000 ms have passed, it means a second,
+  // so the time will be incremented by 1
   if ((millis() - lastTimeIncrement) >= 1000) {
     lastTimeIncrement = millis();
     time += 1;

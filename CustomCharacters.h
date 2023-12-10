@@ -123,6 +123,7 @@ const byte *customChars[numberOfCustomChars] = {
   firstPlace, secondPlace, thirdPlace, 
   heart
 };
+
 // array with each custom character's index
 const uint8_t customCharsIndexes[numberOfCustomChars] = {
   skullIndex, 
@@ -130,7 +131,7 @@ const uint8_t customCharsIndexes[numberOfCustomChars] = {
   verifyIndex, deleteIndex, exitIndex, 
   firstPlaceIndex, secondPlaceIndex, thirdPlaceIndex, 
   heartIndex
-};
+}
 
 /*
   Create each character that has been declared.

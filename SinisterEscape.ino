@@ -61,19 +61,16 @@ void setup() {
 }
 
 void loop() {
-  // joystick.switchHandler();
-  // joystick.movementHandler();
+  joystick.switchHandler();
+  joystick.movementHandler();
  
   // menu.menuSwitch(joystick);
-  menug.display(menu.lcd);
 
-  // player.positionWatcher(menu.lc, joystick);
-
-  // player.displayPlayer(menu.lc);
-
-  // if (player.currentRoom == note.currentRoom) {
-  //   note.displayNote(menu.lc);
-  // }
+  player.positionWatcher(menu.lc, joystick);
+  player.displayPlayer(menu.lc);
+  if (player.currentRoom == note.currentRoom) {
+    note.displayNote(menu.lc);
+  }
 }
 
 
