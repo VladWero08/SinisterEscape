@@ -32,6 +32,6 @@ void playMelody(const byte buzzerPin, const int melody[], const int durations[])
       currentNote = 0;
     }
   }
-}
+};
 
 #endif

@@ -95,6 +95,6 @@ void Joystick::movementHandler(){
   } else if (axisValueY < joystickLeftBound && joystickMiddleInterval[0] < axisValueX < joystickMiddleInterval[1]) {
     direction = joystickLeft;      // joystick is pointing left 
   }
-}
+};
 
 #endif

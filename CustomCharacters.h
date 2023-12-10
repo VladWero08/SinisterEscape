@@ -131,7 +131,7 @@ const uint8_t customCharsIndexes[numberOfCustomChars] = {
   verifyIndex, deleteIndex, exitIndex, 
   firstPlaceIndex, secondPlaceIndex, thirdPlaceIndex, 
   heartIndex
-}
+};
 
 /*
   Create each character that has been declared.
@@ -140,6 +140,6 @@ void initializeCustomChars(LiquidCrystal &lcd) {
   for (int i = 0; i < numberOfCustomChars; i++) {
     lcd.createChar(customCharsIndexes[i], customChars[i]);
   }
-}
+};
 
 #endif

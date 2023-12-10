@@ -30,7 +30,7 @@ bool saveCharAsByte(char* numberChar[], int numberSize, byte &targetVariable){
   targetVariable = (byte) numberInt;
   
   return true;
-}
+};
 
 /*
   Given an array of chars, concatenate (from index 0 to nth) 
@@ -59,7 +59,7 @@ bool saveCharAsByteMatrix(char* numberChar[], int numberSize, byte &targetVariab
   targetVariable = (byte) numberInt;
   
   return true;
-}
+};
 
 /*
   Given the position in an LCD, 
@@ -98,6 +98,6 @@ void displayTimeFromSeconds(LiquidCrystal lcd, const unsigned int time, const by
     lcd.setCursor(column + 3, line);
     lcd.print(seconds);
   }
-}
+};
 
 #endif

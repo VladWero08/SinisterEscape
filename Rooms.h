@@ -80,7 +80,7 @@ void setRoom(LedControl &lc, int room){
       lc.setLed(0, row, col, rooms[room][row][col]);
     }
   }
-}
+};
 
 /*
   Reset the matrix values
@@ -91,6 +91,6 @@ void resetMatrix(LedControl lc){
       lc.setLed(0, row, col, false);
     }
   }
-}
+};
 
 #endif
