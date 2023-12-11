@@ -42,6 +42,7 @@ void setup() {
   
   // set brightness pin for LCD
   pinMode(brightnessPin, OUTPUT);
+  analogWrite(brightnessPin, 100);
   // initialize the customized characters for the LCD
   initializeCustomChars(menu.lcd);
   // set up the LCD's number of columns and rows
@@ -65,6 +66,8 @@ void loop() {
   game.displayMenu(menu.lcd, joystick);
 
   if (game.gameIsRunning) {
+    Serial.println(game.player.currentRoom);
+
     game.player.positionWatcher(game.lc, joystick);
     game.checkPlayerFoundNote();
     game.checkPlayerWin(menu.lcd);

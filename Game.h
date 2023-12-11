@@ -23,7 +23,8 @@ struct Game{
   byte lives;
 
   bool gameIsRunning = true;
-  byte gameEndedArrow = 0; 
+  unsigned long gameEndingTime = 0;
+  byte gameEndedMenuArrow = 0; 
 
   LedControl lc;
   Player player;
@@ -47,6 +48,7 @@ struct Game{
   
   void displayGameEndedMenu(LiquidCrystal lcd, Joystick joystick);
   int gameEndedMenuHandler(LiquidCrystal lcd, Joystick joystick);
+  void displayGameEndedMessage(LiquidCrystal lcd);
   
   // function to reset the game
   void resetGame();
@@ -81,11 +83,11 @@ void Game::checkPlayerWin(LiquidCrystal lcd){
   // if the number of notes reached 5, it means the player won
   if (notes == 1) {
     lcd.clear();
-    resetGame();
-
+    gameEndingTime = millis();
     gameIsRunning = false;
   }
 }
+
 
 /*
   Display the whole game menu
@@ -137,48 +139,65 @@ void Game::displayTime(LiquidCrystal lcd){
   displayTimeFromSeconds(lcd, time, 6, 1);
 };
 
+
+
 void Game::displayGameEndedMenu(LiquidCrystal lcd, Joystick joystick){
-  lcd.setCursor(0, gameEndedArrow);
-  lcd.write(arrowIndex);
+  if ((millis() - gameEndingTime) < 3000) {
+    displayGameEndedMessage(lcd);
+  } else if ((millis() - gameEndingTime) >= 3000 && (millis() - gameEndingTime) <= 3500) {
+    lcd.clear();
+  } else {
+    lcd.setCursor(0, gameEndedMenuArrow);
+    lcd.write(arrowIndex);
 
-  lcd.setCursor(2, 0);
-  lcd.print("Play again");
+    lcd.setCursor(2, 0);
+    lcd.print("Play again");
 
-  lcd.setCursor(2, 1);
-  lcd.print("Back");
+    lcd.setCursor(2, 1);
+    lcd.print("Back");
 
-  gameEndedMenuHandler(lcd, joystick);
+    gameEndedMenuHandler(lcd, joystick);
+  }
+}
+
+void Game::displayGameEndedMessage(LiquidCrystal lcd){
+  displayMessageInCenter(lcd, "You escaped!", 0);
+  displayTimeFromSeconds(lcd, time, 5, 1);
 }
 
 int Game::gameEndedMenuHandler(LiquidCrystal lcd, Joystick joystick){
-  if (joystick.direction == joystickUp && gameEndedArrow == 1) {
-    lcd.setCursor(0, gameEndedArrow);
+  if (joystick.direction == joystickUp && gameEndedMenuArrow == 1) {
+    lcd.setCursor(0, gameEndedMenuArrow);
     lcd.write(" ");
     
-    gameEndedArrow -= 1;
+    gameEndedMenuArrow -= 1;
   }
 
-  if (joystick.direction == joystickDown && gameEndedArrow == 0) {
-    lcd.setCursor(0, gameEndedArrow);
+  if (joystick.direction == joystickDown && gameEndedMenuArrow == 0) {
+    lcd.setCursor(0, gameEndedMenuArrow);
     lcd.write(" ");
 
-    gameEndedArrow += 1;
+    gameEndedMenuArrow += 1;
   }
 
   if (joystick.currentSwitchStateChanged == HIGH) {
-    if (gameEndedArrow == 0) {
+    lcd.clear();
+    resetGame();
+
+    if (gameEndedMenuArrow == 0) {
       // start the game again and enter the game menu
-      Serial.println("11");
+      gameIsRunning = true;
       return 11;
     } else {
       // go back to the main menu
-      Serial.println("1");
       return 1;
     }
   }
 
   return -1;
 }
+
+
 
 void Game::resetGame(){
   time = 0;

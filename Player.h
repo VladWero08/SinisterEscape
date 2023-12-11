@@ -104,6 +104,8 @@ void Player::movementDownHandler(LedControl &lc){
     // move to the next room according to 
     // the movement matrix
     currentRoom = roomsCommunication[currentRoom][joystickDown];
+    setRoom(lc, currentRoom);
+    
     row = 0;
   }
 };
