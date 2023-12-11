@@ -19,9 +19,8 @@ struct Player{
   // last time when isActive changes its states, in ms
   unsigned long lastBlinking;
 
-  Player(LedControl &lc): row(1), column(1), isActive(true){
-    currentRoom = random(0, roomsSize);
-    setRoom(lc, currentRoom);
+  Player(LedControl &lc){
+    initPlayer(lc);
   };
 
   // functions to handle player's movement
@@ -33,6 +32,9 @@ struct Player{
 
   // function to display the player in the room
   void displayPlayer(LedControl &lc);
+
+  // function to initate the players position;
+  void initPlayer(LedControl &lc);
 };
 
 /*
@@ -169,5 +171,13 @@ void Player::displayPlayer(LedControl &lc){
     lc.setLed(0, row, column, isActive);
   }
 };
+
+void Player::initPlayer(LedControl &lc){
+  row = 1;
+  column = 1;
+  isActive = true;
+  currentRoom = random(0, roomsSize);
+  setRoom(lc, currentRoom);
+}
 
 #endif

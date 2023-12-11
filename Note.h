@@ -3,6 +3,7 @@
 #define NOTE_H
 
 #include <LedControl.h>
+#include "Player.h"
 #include "Rooms.h"
 
 const int noteActiveBlinkingInterval = 500;
@@ -30,7 +31,7 @@ struct Note{
   void generatePositionInRoom();
 
   // function to display the note in the room
-  void displayNote(LedControl &lc);
+  void displayNote(LedControl &lc, Player player);
 };
 
 /*
@@ -76,7 +77,11 @@ void Note::generatePositionInRoom(){
   Display the current position of the note 
   in the room.
 */
-void Note::displayNote(LedControl &lc){
+void Note::displayNote(LedControl &lc, Player player){
+  // if the note and the player are placed in different rooms, exit
+  if (currentRoom != player.currentRoom)
+    return;
+
   // depending on the state of the note,
   // check if the state should be toggled 
   if (isActive) {

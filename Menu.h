@@ -68,7 +68,6 @@ const char* numbersAlphabet[numbersAlphabetSize] = {
 
 const byte playerNamesStartAddr = 3;
 const byte highschoreStartAddr = 6;
-
 const byte maximumHighscores = 3;
 
 struct Menu{
@@ -210,6 +209,9 @@ void Menu::menuSwitch(Joystick joystick){
 
       menuWatcher(mainMenuMessagesSize, joystick);
       mainMenuHandler(joystick);
+      break;
+    case 11:
+      // display game menu
       break;
     case 2:
       // display highscores

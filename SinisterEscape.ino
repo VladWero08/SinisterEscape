@@ -1,9 +1,7 @@
 #include "CustomCharacters.h"
 // #include "joystick.h"
 #include "Menu.h"
-#include "MenuGame.h"
-#include "Player.h"
-#include "Note.h"
+#include "Game.h"
 
 // PINs connected to the matrix
 const byte dinPin = 13;
@@ -33,10 +31,8 @@ const byte lcdD7 = 4;
 const byte brightnessPin = 10;
 
 Menu menu(lcdRS, lcdEN, lcdD4, lcdD5, lcdD6, lcdD7, dinPin, clockPin, loadPin, buzzerPin, brightnessPin);
-MenuGame menug;
 
-Player player(menu.lc);
-Note note;
+Game game(menu.lc);
 
 void setup() {
   // set up joystick's pins
@@ -66,10 +62,12 @@ void loop() {
  
   // menu.menuSwitch(joystick);
 
-  player.positionWatcher(menu.lc, joystick);
-  player.displayPlayer(menu.lc);
-  if (player.currentRoom == note.currentRoom) {
-    note.displayNote(menu.lc);
+  game.displayMenu(menu.lcd, joystick);
+
+  if (game.gameIsRunning) {
+    game.player.positionWatcher(game.lc, joystick);
+    game.checkPlayerFoundNote();
+    game.checkPlayerWin(menu.lcd);
   }
 }
 
