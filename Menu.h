@@ -103,6 +103,7 @@ struct Menu{
 
     lc.shutdown(0, false);
     lc.clearDisplay(0);
+    setSkullOnMatrix(lc);
 
     soundExitBlinking = false;
     currentMenu = 0;
@@ -345,9 +346,12 @@ void Menu::gameMenuHandler(Joystick joystick){
 
   switch (gameMenuChoice) {
     case 1:
+      // go back to the main menu
+      setSkullOnMatrix(lc);
       currentMenu = 1;
       break;
     case 11:
+      // start a new game
       currentMenu = 11;
       break;
     default:

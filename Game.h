@@ -82,6 +82,7 @@ void Game::checkPlayerFoundNote(){
 void Game::checkPlayerWin(LiquidCrystal lcd){
   // if the number of notes reached 5, it means the player won
   if (notes == 1) {
+    resetMatrix(lc);
     lcd.clear();
     gameEndingTime = millis();
     gameIsRunning = false;

@@ -61,43 +61,4 @@ bool saveCharAsByteMatrix(char* numberChar[], int numberSize, byte &targetVariab
   return true;
 };
 
-/*
-  Given the position in an LCD, 
-  display the time as <minutes>:<seconds>.
-*/
-void displayTimeFromSeconds(LiquidCrystal lcd, const unsigned int time, const byte column, const byte line) {
-  unsigned int minutes = time / 60;
-  unsigned int seconds = time % 60;
-
-  // if the minutes are smaller than 10,
-  // also display a 0 before the minute
-  if (minutes < 10) {
-    lcd.setCursor(column, line);
-    lcd.print("0");
-
-    lcd.setCursor(column + 1, line);
-    lcd.print(minutes);
-  } else {
-    lcd.setCursor(column, line);
-    lcd.print(minutes);
-  }
-
-  // display the separation column
-  lcd.setCursor(column + 2, line);
-  lcd.print(":");
-
-  // if the seconds are smaller than 10,
-  // also display a 0 before the second
-  if (seconds < 10) {
-    lcd.setCursor(column + 3, line);
-    lcd.print("0");
-
-    lcd.setCursor(column + 4, line);
-    lcd.print(seconds);
-  } else {
-    lcd.setCursor(column + 3, line);
-    lcd.print(seconds);
-  }
-};
-
 #endif

@@ -50,6 +50,16 @@ const bool rooms[roomsSize][matrixSize][matrixSize] = {
   }
 };
 
+const bool skullMatrix[matrixSize][matrixSize] = {
+    {1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 0, 0, 1, 1, 0, 0, 1},
+    {1, 0, 0, 1, 1, 0, 0, 1},
+    {1, 1, 1, 0, 0, 1, 1, 1},
+    {1, 1, 1, 1, 1, 1, 1, 1},
+    {0, 1, 1, 1, 1, 1, 1, 0},
+    {0, 1, 0, 1, 1, 0, 1, 0},
+    {0, 1, 0, 1, 1, 0, 1, 0}
+};
 
 
 /*
@@ -81,6 +91,17 @@ void setRoom(LedControl &lc, int room){
     }
   }
 };
+
+/*
+  Display the skull on the matrix
+*/
+void setSkullOnMatrix(LedControl &lc){
+  for (int row = 0; row < matrixSize; row++) {
+    for (int col = 0; col < matrixSize; col++) {
+      lc.setLed(0, row, col, skullMatrix[row][col]);
+    }
+  }
+}
 
 /*
   Reset the matrix values
