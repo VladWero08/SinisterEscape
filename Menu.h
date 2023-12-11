@@ -8,6 +8,7 @@
 
 #include "EEPROM.h"
 
+#include "Game.h"
 #include "JoyStick.h"
 #include "MenuInput.h"
 #include "MenuDisplay.h"
@@ -89,9 +90,10 @@ struct Menu{
   byte arrowMenuLinePosition;
   byte currentMenuPosition;
 
+  Game game;
   MenuInput menuInput;
 
-  Menu(byte RS, byte EN, byte D4, byte D5, byte D6, byte D7, byte dinPin, byte clockPin, byte loadPin, byte buzzerPin, byte lcdBrightnessPin): lcd(RS, EN, D4, D5, D6, D7), lc(dinPin, clockPin, loadPin, 1){    
+  Menu(byte RS, byte EN, byte D4, byte D5, byte D6, byte D7, byte dinPin, byte clockPin, byte loadPin, byte buzzerPin, byte lcdBrightnessPin): lcd(RS, EN, D4, D5, D6, D7), lc(dinPin, clockPin, loadPin, 1), game(this->lc){    
     loadMenuSettings();
     loadPlayersHighschores();
     activateMenuSettins();
@@ -122,6 +124,9 @@ struct Menu{
   void menuSwitch(Joystick joystick);
   void menuWatcher(int maximumMenuSize, Joystick joystick);
   void mainMenuHandler(Joystick joystick);
+
+  // functions related to game menu
+  void gameMenuHandler(Joystick joystick);
 
   // funtions related to the highscores menu
   void highscoresMenuHandler(Joystick joystick);
@@ -212,6 +217,7 @@ void Menu::menuSwitch(Joystick joystick){
       break;
     case 11:
       // display game menu
+      gameMenuHandler(joystick);
       break;
     case 2:
       // display highscores
@@ -311,6 +317,8 @@ void Menu::mainMenuHandler(Joystick joystick){
     switch (arrowMenuPosition) {
       case 0:
         // start the game
+        game.resetGame();
+        currentMenu = 11;
         break;
       case 1:
         // set menu to highscores
@@ -331,6 +339,21 @@ void Menu::mainMenuHandler(Joystick joystick){
     resetMenu();
   }
 };
+
+void Menu::gameMenuHandler(Joystick joystick){
+  int gameMenuChoice = game.displayMenu(lcd, joystick);
+
+  switch (gameMenuChoice) {
+    case 1:
+      currentMenu = 1;
+      break;
+    case 11:
+      currentMenu = 11;
+      break;
+    default:
+      break;
+  }
+}
 
 
 void Menu::highscoresMenuHandler(Joystick joystick){

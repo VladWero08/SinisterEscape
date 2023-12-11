@@ -39,14 +39,14 @@ struct Game{
   void checkPlayerWin(LiquidCrystal lcd);
 
   // functions to display the game on the LCD
-  void displayMenu(LiquidCrystal lcd, Joystick joystick);
+  int displayMenu(LiquidCrystal lcd, Joystick joystick);
 
   void displayGameRunningMenu(LiquidCrystal lcd);
   void displayLives(LiquidCrystal lcd);
   void displayNotes(LiquidCrystal lcd);
   void displayTime(LiquidCrystal lcd);
   
-  void displayGameEndedMenu(LiquidCrystal lcd, Joystick joystick);
+  int displayGameEndedMenu(LiquidCrystal lcd, Joystick joystick);
   int gameEndedMenuHandler(LiquidCrystal lcd, Joystick joystick);
   void displayGameEndedMessage(LiquidCrystal lcd);
   
@@ -92,11 +92,21 @@ void Game::checkPlayerWin(LiquidCrystal lcd){
 /*
   Display the whole game menu
 */
-void Game::displayMenu(LiquidCrystal lcd, Joystick joystick){
+int Game::displayMenu(LiquidCrystal lcd, Joystick joystick){
   if (gameIsRunning) {
     displayGameRunningMenu(lcd);
+    
+    // listents to the position change of the player
+    player.positionWatcher(lc, joystick);
+
+    // check if the player found any notes
+    checkPlayerFoundNote();
+    // check if the player found enough notes
+    checkPlayerWin(lcd);
+
+    return -1;
   } else {
-    displayGameEndedMenu(lcd, joystick);
+    return displayGameEndedMenu(lcd, joystick);
   }
 };
 
@@ -112,7 +122,7 @@ void Game::displayGameRunningMenu(LiquidCrystal lcd){
 void Game::displayLives(LiquidCrystal lcd){
   for(int i = 0; i < lives; i++) {
     lcd.setCursor(heartsStartPosition + i, 0);
-    lcd.write(heartIndex);
+    lcd.write(skullIndex);
   }
 };
 
@@ -141,7 +151,7 @@ void Game::displayTime(LiquidCrystal lcd){
 
 
 
-void Game::displayGameEndedMenu(LiquidCrystal lcd, Joystick joystick){
+int Game::displayGameEndedMenu(LiquidCrystal lcd, Joystick joystick){
   if ((millis() - gameEndingTime) < 3000) {
     displayGameEndedMessage(lcd);
   } else if ((millis() - gameEndingTime) >= 3000 && (millis() - gameEndingTime) <= 3500) {
@@ -156,8 +166,10 @@ void Game::displayGameEndedMenu(LiquidCrystal lcd, Joystick joystick){
     lcd.setCursor(2, 1);
     lcd.print("Back");
 
-    gameEndedMenuHandler(lcd, joystick);
+    return gameEndedMenuHandler(lcd, joystick);
   }
+
+  return -1;
 }
 
 void Game::displayGameEndedMessage(LiquidCrystal lcd){

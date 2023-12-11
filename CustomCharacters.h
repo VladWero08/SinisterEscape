@@ -101,27 +101,14 @@ const byte thirdPlace[8] = {
 };
 const uint8_t thirdPlaceIndex = (uint8_t) 7;
 
-const byte heart[8] = {
-	0b00000,
-	0b01010,
-	0b11111,
-	0b11111,
-	0b11111,
-	0b01110,
-	0b00100,
-	0b00000
-};
-const uint8_t heartIndex = (uint8_t) 8;
-
 // number of custom characters that will be created
-const byte numberOfCustomChars = 9;
+const byte numberOfCustomChars = 8;
 // array with all custom characters
 const byte *customChars[numberOfCustomChars] = {
   skull, 
   arrow, 
   verify, deleteX, exitArrow, 
   firstPlace, secondPlace, thirdPlace, 
-  heart
 };
 
 // array with each custom character's index
@@ -129,8 +116,7 @@ const uint8_t customCharsIndexes[numberOfCustomChars] = {
   skullIndex, 
   arrowIndex, 
   verifyIndex, deleteIndex, exitIndex, 
-  firstPlaceIndex, secondPlaceIndex, thirdPlaceIndex, 
-  heartIndex
+  firstPlaceIndex, secondPlaceIndex, thirdPlaceIndex,
 };
 
 /*

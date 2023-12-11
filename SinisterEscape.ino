@@ -32,8 +32,6 @@ const byte brightnessPin = 10;
 
 Menu menu(lcdRS, lcdEN, lcdD4, lcdD5, lcdD6, lcdD7, dinPin, clockPin, loadPin, buzzerPin, brightnessPin);
 
-Game game(menu.lc);
-
 void setup() {
   // set up joystick's pins
   pinMode(joystickinSW, INPUT_PULLUP);
@@ -42,7 +40,6 @@ void setup() {
   
   // set brightness pin for LCD
   pinMode(brightnessPin, OUTPUT);
-  analogWrite(brightnessPin, 100);
   // initialize the customized characters for the LCD
   initializeCustomChars(menu.lcd);
   // set up the LCD's number of columns and rows
@@ -61,17 +58,7 @@ void loop() {
   joystick.switchHandler();
   joystick.movementHandler();
  
-  // menu.menuSwitch(joystick);
-
-  game.displayMenu(menu.lcd, joystick);
-
-  if (game.gameIsRunning) {
-    Serial.println(game.player.currentRoom);
-
-    game.player.positionWatcher(game.lc, joystick);
-    game.checkPlayerFoundNote();
-    game.checkPlayerWin(menu.lcd);
-  }
+  menu.menuSwitch(joystick);
 }
 
 
