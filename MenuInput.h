@@ -18,7 +18,10 @@ const byte symbolPositions[3] = {
 };
 
 struct MenuInput{
+  // how many characters the user has completed
   byte currentInputCursorPosition;
+  // how many characters overflowed the X axis 
+  // for the alphabet
   byte alphabetPositionBoundary;
 
   byte currentCursorLinePosition;
@@ -32,13 +35,17 @@ struct MenuInput{
     alphabetPositionBoundary = 0;
   } 
 
+  // functions to handle user movements
   void userInputHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[], const char* userAlphabet[]);
-  void displayUserInput(LiquidCrystal lcd, const char* userInput[]);
   void userAlphabetHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[], const int leftBoundary, const int rightBoundary);
   void userInputControlsHandler(LiquidCrystal lcd, Joystick joystick);
   int joystickPressControlsHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[]);
   void userCursorLineHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[]);
 
+  // function to display user input
+  void displayUserInput(LiquidCrystal lcd, const char* userInput[]);
+
+  // function to reset input variables
   void resetInputVariables();
 };
 
@@ -146,7 +153,7 @@ void MenuInput::userAlphabetHandler(LiquidCrystal lcd, Joystick joystick, const 
   For any empty space, display a simple cursor.
 */
 void MenuInput::userInputControlsHandler(LiquidCrystal lcd, Joystick joystick){
-  if (joystick.direction == joystickLeft && currentCursorColumnPosition > deletePosition) {
+  if (joystick.direction == joystickLeft && currentCursorColumnPosition > 0) {
     currentCursorColumnPosition -= 1;
   }
 

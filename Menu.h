@@ -26,27 +26,27 @@ const char* settingsMenu[settingsMenuSize] = {
   "Enter name", "LCD bright", "Matrix bright", "Sound", "Back"
 };
 
-const byte aboutMenuSize = 20;
-const char* aboutMenu[20] = {
-  "SinisterEscape",
-  "run through",
+const byte aboutMenuSize = 10;
+const char* aboutMenu[10] = {
+  // "SinisterEscape",
+  "Run through",
   "linked rooms,",
   "collecting 5",
   "crucical notes",
   "that hold the",
   "key to your",
   "escape...",
-  "Be wary of",
-  "Dr. Nocturne's",
-  "relentless",
-  "pursuit.",
-  "He will",
-  "follow and try",
-  "to kill you.",
-  "",
+  // "Be wary of",
+  // "Dr. Nocturne's",
+  // "relentless",
+  // "pursuit.",
+  // "He will",
+  // "follow and try",
+  // "to kill you.",
+  // "",
   "Creator:",
   "VladWero08",
-  "",
+  // "",
   "Back",
 };
 
@@ -103,7 +103,6 @@ struct Menu{
 
     lc.shutdown(0, false);
     lc.clearDisplay(0);
-    setSkullOnMatrix(lc);
 
     soundExitBlinking = false;
     currentMenu = 0;
@@ -346,12 +345,9 @@ void Menu::gameMenuHandler(Joystick joystick){
 
   switch (gameMenuChoice) {
     case 1:
-      // go back to the main menu
-      setSkullOnMatrix(lc);
       currentMenu = 1;
       break;
     case 11:
-      // start a new game
       currentMenu = 11;
       break;
     default:
