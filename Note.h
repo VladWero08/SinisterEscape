@@ -15,9 +15,9 @@ struct Note{
   byte currentRoom;
 
   // controls the note's visibility
-  bool isActive;
-  // last time when isActive changes its states, in ms
-  unsigned long lastBlinking;
+  bool isDisplayed;
+  // last time when isDisplayed changes its states, in ms
+  unsigned long lastDisplayBlinking;
 
   Note(){
     spawnNoteRandomly();
@@ -28,10 +28,10 @@ struct Note{
   void spawnNoteDifferentRoom(const byte playerRoom);
 
   // function to generate a random position in a room
-  void generatePositionInRoom();
+  void spawnInRoom();
 
   // function to display the note in the room
-  void displayNote(LedControl &lc, Player player);
+  void display(LedControl &lc, Player player);
 };
 
 /*
@@ -40,7 +40,7 @@ struct Note{
 */
 void Note::spawnNoteRandomly(){
   currentRoom = random(0, roomsSize);  
-  generatePositionInRoom();
+  spawnInRoom();
 };
 
 /*
@@ -54,14 +54,14 @@ void Note::spawnNoteDifferentRoom(const byte playerRoom){
     currentRoom = random(0, roomsSize);
   }
 
-  generatePositionInRoom();
+  spawnInRoom();
 };
 
 /*
   Generate a position in the currentRoom
-  until it is a valid one
+  until it is a valid one. Spawn that note in the position.
 */
-void Note::generatePositionInRoom(){
+void Note::spawnInRoom(){
   row = random(0, matrixSize);
   column = random(0, matrixSize);
 
@@ -77,24 +77,24 @@ void Note::generatePositionInRoom(){
   Display the current position of the note 
   in the room.
 */
-void Note::displayNote(LedControl &lc, Player player){
+void Note::display(LedControl &lc, Player player){
   // if the note and the player are placed in different rooms, exit
   if (currentRoom != player.currentRoom)
     return;
 
   // depending on the state of the note,
   // check if the state should be toggled 
-  if (isActive) {
-    if ((millis() - noteActiveBlinkingInterval) > lastBlinking) {
-      lastBlinking = millis();
-      isActive = !isActive;
-      lc.setLed(0, row, column, isActive);
+  if (isDisplayed) {
+    if ((millis() - noteActiveBlinkingInterval) > lastDisplayBlinking) {
+      lastDisplayBlinking = millis();
+      isDisplayed = !isDisplayed;
+      lc.setLed(0, row, column, isDisplayed);
     }
   } else {
-    if ((millis() - noteInactiveBlinkingInterval) > lastBlinking) {
-      lastBlinking = millis();
-      isActive = !isActive;
-      lc.setLed(0, row, column, isActive);
+    if ((millis() - noteInactiveBlinkingInterval) > lastDisplayBlinking) {
+      lastDisplayBlinking = millis();
+      isDisplayed = !isDisplayed;
+      lc.setLed(0, row, column, isDisplayed);
     }
   }
 };

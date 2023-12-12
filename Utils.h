@@ -2,6 +2,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <math.h>
 #include <LiquidCrystal.h>
 
 /*
@@ -60,5 +61,13 @@ bool saveCharAsByteMatrix(char* numberChar[], int numberSize, byte &targetVariab
   
   return true;
 };
+
+/*
+  Calculate the euclidean distance between 
+  Dr. Nocturne and the player.
+*/ 
+float euclideanDistance(byte playerRow, byte playerColumn, byte drNocturneRow, byte drNocturneColumn) {
+  return sqrt(pow(playerRow - drNocturneRow, 2) + pow(playerColumn - drNocturneColumn, 2));
+}
 
 #endif

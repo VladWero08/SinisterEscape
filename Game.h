@@ -10,6 +10,7 @@
 #include "JoyStick.h"
 #include "Player.h"
 #include "Note.h"
+#include "DrNocturne.h"
 #include "Utils.h"
 
 const byte heartsStartPosition = 13;
@@ -29,6 +30,7 @@ struct Game{
 
   Player player;
   Note note;
+  DrNocturne doctor;
 
   Game(LedControl &lc): time(0), notes(0), lives(3), player(lc){
     lastTimeIncrement = millis();
@@ -36,7 +38,9 @@ struct Game{
 
   // functions to control the state of game
   void checkPlayerFoundNote();
-  void checkPlayerWin(LedControl &lc, LiquidCrystal &lcd);
+  void checkPlayerWasFoundByDoctor(LiquidCrystal &lcd);
+  void checkPlayerWon(LedControl &lc, LiquidCrystal &lcd);
+  void checkPlayerLost(LedControl &lc, LiquidCrystal &lcd);
 
   // functions to display the game on the LCD
   int play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick);
@@ -79,9 +83,36 @@ void Game::checkPlayerFoundNote(){
   else {
     note.spawnNoteRandomly();
   }
+
+  // if the user reached 2 notes, spawn Dr. Nocturne
+  if (notes == 2) {
+    doctor.isWaiting = true;
+  }
+
+  // if the user reached 4 notes, level up Dr. Nocturne
+  // and spawn him randomly
+  if (notes == 4) {
+    doctor.levelUp();
+    doctor.spawnDoctorRandomly();
+    doctor.isWaiting = true;
+  }
 }
 
-void Game::checkPlayerWin(LedControl &lc, LiquidCrystal &lcd){
+void Game::checkPlayerWasFoundByDoctor(LiquidCrystal &lcd){
+  // if the player and the doctor are in the same room,
+  // in the same position, it means the player was found
+  if (player.currentRoom == doctor.currentRoom && player.row == doctor.row && player.column == doctor.column) {
+    // firstly clear the lcd, than
+    // decrease the number of lives
+    lcd.clear();
+    lives -= 1;
+    // make the doctor inactie
+    doctor.isWaiting = false;
+    doctor.isChasing = false;
+  }
+}
+
+void Game::checkPlayerWon(LedControl &lc, LiquidCrystal &lcd){
   // if the number of notes reached 5, it means the player won
   if (notes == notesNeedForWin) {
     // clear the matrix
@@ -91,9 +122,22 @@ void Game::checkPlayerWin(LedControl &lc, LiquidCrystal &lcd){
 
     gameEndingTime = millis();
     gameIsRunning = false;
+    player.isWinning = true;
   }
 }
 
+void Game::checkPlayerLost(LedControl &lc, LiquidCrystal &lcd){
+  // if the player has no lives left, that means he lost
+  if (lives == 0) {
+    // clear the matrix
+    resetMatrix(lc);
+    // clear the menu LCD
+    lcd.clear();
+
+    gameEndingTime = millis();
+    gameIsRunning = false;
+  }
+}
 
 /*
   If the game is running, display the game status
@@ -110,10 +154,36 @@ int Game::play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){
     // listents to the position change of the player
     player.positionWatcher(lc, joystick);
 
-    // check if the player found any notes
-    checkPlayerFoundNote();
+    if (doctor.isWaiting == true) {
+      doctor.isWaitingToChase(player);
+      doctor.display(lc, player);
+    } 
+
+    if (doctor.isChasing == true) {
+      // if the player escaped from the room where the
+      // doctor was, the doctor stops chasing
+      // if (player.currentRoom != doctor.currentRoom) {
+      //   doctor.isChasing = false;
+      // }
+
+      // doctor is chasing the player
+      doctor.chase(lc, player);
+      // check if the player was found by the doctor
+      checkPlayerWasFoundByDoctor(lcd);
+      
+      doctor.display(lc, player);
+    }
+
+    if (doctor.isWaiting == false && doctor.isChasing == false) {
+      note.display(lc, player);
+      // check if the player found any notes
+      checkPlayerFoundNote();
+    }
+
     // check if the player found enough notes
-    checkPlayerWin(lc, lcd);
+    checkPlayerWon(lc, lcd);
+    // check if the player lost
+    checkPlayerLost(lc, lcd);
 
     return -1;
   } else {
@@ -126,8 +196,7 @@ void Game::displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd){
   displayNotes(lcd);
   displayTime(lcd);
 
-  player.displayPlayer(lc);
-  note.displayNote(lc, player);
+  player.display(lc);
 };
 
 void Game::displayLives(LiquidCrystal &lcd){
@@ -203,7 +272,11 @@ int Game::displayGameEndedMenu(LedControl &lc,  LiquidCrystal &lcd, Joystick &jo
   related to the state of the game: win & time / lose
 */
 void Game::displayGameEndedMessage(LiquidCrystal &lcd){
-  displayMessageInCenter(lcd, "You escaped!", 0);
+  if (player.isWinning) {
+    displayMessageInCenter(lcd, "You escaped!", 0);
+  } else {
+    displayMessageInCenter(lcd, "You died!", 0);
+  }
   displayTimeFromSeconds(lcd, time, 5, 1);
 }
 

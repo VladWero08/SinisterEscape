@@ -16,6 +16,7 @@ struct Player{
 
   // controls the player's visibility
   bool isDisplayed;
+  bool isWinning;
   // last time when isDisplayed changes its states, in ms
   unsigned long lastDisplayBlinking;
 
@@ -31,7 +32,7 @@ struct Player{
   void movementRightHandler(LedControl &lc);
 
   // function to display the player in the room
-  void displayPlayer(LedControl &lc);
+  void display(LedControl &lc);
 
   // function to initate the players position;
   void initPlayer(LedControl &lc);
@@ -166,7 +167,7 @@ void Player::movementRightHandler(LedControl &lc){
   Display the current position of the player 
   in the room.
 */
-void Player::displayPlayer(LedControl &lc){
+void Player::display(LedControl &lc){
   if ((millis() - lastDisplayBlinking) > playerBlinkingInterval) {
     lastDisplayBlinking = millis();
     isDisplayed = !isDisplayed;
@@ -177,6 +178,7 @@ void Player::displayPlayer(LedControl &lc){
 void Player::initPlayer(LedControl &lc){
   row = 1;
   column = 1;
+  isWinning = false;
   isDisplayed = true;
   currentRoom = random(0, roomsSize);
   setRoom(lc, currentRoom);
