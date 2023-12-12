@@ -39,6 +39,7 @@ struct MenuInput{
   void userInputHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[], const char* userAlphabet[]);
   void userAlphabetHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[], const int leftBoundary, const int rightBoundary);
   void userInputControlsHandler(LiquidCrystal lcd, Joystick joystick);
+  
   int joystickPressControlsHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[]);
   void userCursorLineHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[]);
 

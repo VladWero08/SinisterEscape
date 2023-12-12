@@ -13,6 +13,7 @@
 #include "Utils.h"
 
 const byte heartsStartPosition = 13;
+const byte notesNeedForWin = 6;
 
 struct Game{
   // time since the game started
@@ -26,32 +27,33 @@ struct Game{
   unsigned long gameEndingTime = 0;
   byte gameEndedMenuArrow = 0; 
 
-  LedControl lc;
   Player player;
   Note note;
 
-  Game(LedControl &lc): time(0), notes(0), lives(3), lc(lc), player(this->lc){
+  Game(LedControl &lc): time(0), notes(0), lives(3), player(lc){
     lastTimeIncrement = millis();
   }
 
   // functions to control the state of game
   void checkPlayerFoundNote();
-  void checkPlayerWin(LiquidCrystal lcd);
+  void checkPlayerWin(LedControl &lc, LiquidCrystal lcd);
 
   // functions to display the game on the LCD
-  int displayMenu(LiquidCrystal lcd, Joystick joystick);
+  int play(LedControl &lc, LiquidCrystal lcd, Joystick joystick);
 
-  void displayGameRunningMenu(LiquidCrystal lcd);
+  // functions to display game status while running
+  void displayGameRunningMenu(LedControl &lc, LiquidCrystal lcd);
   void displayLives(LiquidCrystal lcd);
   void displayNotes(LiquidCrystal lcd);
   void displayTime(LiquidCrystal lcd);
   
-  int displayGameEndedMenu(LiquidCrystal lcd, Joystick joystick);
-  int gameEndedMenuHandler(LiquidCrystal lcd, Joystick joystick);
+  // functions to handle end of the game
+  int displayGameEndedMenu(LedControl &lc, LiquidCrystal lcd, Joystick joystick);
   void displayGameEndedMessage(LiquidCrystal lcd);
+  int gameEndedMenuHandler(LedControl &lc, LiquidCrystal lcd, Joystick joystick);
   
   // function to reset the game
-  void resetGame();
+  void resetGame(LedControl &lc);
 };
 
 void Game::checkPlayerFoundNote(){
@@ -79,11 +81,14 @@ void Game::checkPlayerFoundNote(){
   }
 }
 
-void Game::checkPlayerWin(LiquidCrystal lcd){
+void Game::checkPlayerWin(LedControl &lc, LiquidCrystal lcd){
   // if the number of notes reached 5, it means the player won
-  if (notes == 1) {
+  if (notes == notesNeedForWin) {
+    // clear the matrix
     resetMatrix(lc);
+    // clear the menu LCD
     lcd.clear();
+
     gameEndingTime = millis();
     gameIsRunning = false;
   }
@@ -91,11 +96,16 @@ void Game::checkPlayerWin(LiquidCrystal lcd){
 
 
 /*
-  Display the whole game menu
+  If the game is running, display the game status
+  on the LCD screen. Also, listen to joystick movements
+  from the player, check if it has found any notes and if
+  it might have won.
+
+  Otherwise, display a game ending message.
 */
-int Game::displayMenu(LiquidCrystal lcd, Joystick joystick){
+int Game::play(LedControl &lc, LiquidCrystal lcd, Joystick joystick){
   if (gameIsRunning) {
-    displayGameRunningMenu(lcd);
+    displayGameRunningMenu(lc, lcd);
     
     // listents to the position change of the player
     player.positionWatcher(lc, joystick);
@@ -103,15 +113,15 @@ int Game::displayMenu(LiquidCrystal lcd, Joystick joystick){
     // check if the player found any notes
     checkPlayerFoundNote();
     // check if the player found enough notes
-    checkPlayerWin(lcd);
+    checkPlayerWin(lc, lcd);
 
     return -1;
   } else {
-    return displayGameEndedMenu(lcd, joystick);
+    return displayGameEndedMenu(lc, lcd, joystick);
   }
 };
 
-void Game::displayGameRunningMenu(LiquidCrystal lcd){
+void Game::displayGameRunningMenu(LedControl &lc, LiquidCrystal lcd){
   displayLives(lcd);
   displayNotes(lcd);
   displayTime(lcd);
@@ -151,13 +161,28 @@ void Game::displayTime(LiquidCrystal lcd){
 };
 
 
+/*
+  After the game has ended, display an ending message
+  with the result for 3 seconds.
 
-int Game::displayGameEndedMenu(LiquidCrystal lcd, Joystick joystick){
+  Afterwards, a transition of 0.5s will occur.
+
+  Finally, the user will be prompted a intermediate menu
+  to choose from: to play again OR to return to the main menu.
+*/
+int Game::displayGameEndedMenu(LedControl &lc,  LiquidCrystal lcd, Joystick joystick){
+  // for 3 seconds the game endings message will be displayed
   if ((millis() - gameEndingTime) < 3000) {
     displayGameEndedMessage(lcd);
-  } else if ((millis() - gameEndingTime) >= 3000 && (millis() - gameEndingTime) <= 3500) {
+  } 
+  // after that, a smooth 500 ms transition will be made,
+  // in which the LCD will be cleared
+  else if ((millis() - gameEndingTime) >= 3000 && (millis() - gameEndingTime) <= 3500) {
     lcd.clear();
-  } else {
+  } 
+  // an intermediate menu will be displayed, in case
+  // the user wants to play again
+  else {
     lcd.setCursor(0, gameEndedMenuArrow);
     lcd.write(arrowIndex);
 
@@ -167,18 +192,27 @@ int Game::displayGameEndedMenu(LiquidCrystal lcd, Joystick joystick){
     lcd.setCursor(2, 1);
     lcd.print("Back");
 
-    return gameEndedMenuHandler(lcd, joystick);
+    return gameEndedMenuHandler(lc, lcd, joystick);
   }
 
   return -1;
 }
 
+/*
+  Display this message when the game has ended,
+  related to the state of the game: win & time / lose
+*/
 void Game::displayGameEndedMessage(LiquidCrystal lcd){
   displayMessageInCenter(lcd, "You escaped!", 0);
   displayTimeFromSeconds(lcd, time, 5, 1);
 }
 
-int Game::gameEndedMenuHandler(LiquidCrystal lcd, Joystick joystick){
+/*
+  Handle the intermediate menu: if the user
+  chooses to play again or to return to the main menu
+*/
+int Game::gameEndedMenuHandler(LedControl &lc, LiquidCrystal lcd, Joystick joystick){
+  // handle up movement of the joystick
   if (joystick.direction == joystickUp && gameEndedMenuArrow == 1) {
     lcd.setCursor(0, gameEndedMenuArrow);
     lcd.write(" ");
@@ -186,6 +220,7 @@ int Game::gameEndedMenuHandler(LiquidCrystal lcd, Joystick joystick){
     gameEndedMenuArrow -= 1;
   }
 
+  // handle down movement of the joystick
   if (joystick.direction == joystickDown && gameEndedMenuArrow == 0) {
     lcd.setCursor(0, gameEndedMenuArrow);
     lcd.write(" ");
@@ -193,9 +228,12 @@ int Game::gameEndedMenuHandler(LiquidCrystal lcd, Joystick joystick){
     gameEndedMenuArrow += 1;
   }
 
+  // handle the button press for the joystick
   if (joystick.currentSwitchStateChanged == HIGH) {
+    // no matter where the user is pointing, clear the LCD
+    // and reset the game variables
     lcd.clear();
-    resetGame();
+    resetGame(lc);
 
     if (gameEndedMenuArrow == 0) {
       // start the game again and enter the game menu
@@ -211,8 +249,10 @@ int Game::gameEndedMenuHandler(LiquidCrystal lcd, Joystick joystick){
 }
 
 
-
-void Game::resetGame(){
+/*
+  Reset all the game variables
+*/
+void Game::resetGame(LedControl &lc){
   time = 0;
   notes = 0;
   lives = 3;

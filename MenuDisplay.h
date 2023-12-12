@@ -144,7 +144,7 @@ void displayHighscores(LiquidCrystal lcd, const char* playerNames[], const unsig
       for (int i = 0; i < 2; i++) {
       // display the symbol for the podium
       lcd.setCursor(2, i);
-      lcd.write(placeStartingIndex + menuIndex + i);
+      lcd.print(menuIndex + i + 1);
 
       // display the name of the player
       lcd.setCursor(4, i);
@@ -157,7 +157,7 @@ void displayHighscores(LiquidCrystal lcd, const char* playerNames[], const unsig
   } else {
       // display the symbol for the podium
       lcd.setCursor(2, 0);
-      lcd.write(placeStartingIndex + menuIndex);
+      lcd.print(menuIndex + 1);
 
       // display the name of the player
       lcd.setCursor(4, 0);

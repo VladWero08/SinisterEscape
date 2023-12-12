@@ -32,13 +32,12 @@ const char* aboutMenu[10] = {
   "Run through",
   "linked rooms,",
   "collecting 5",
-  "crucical notes",
-  "that hold the",
+  "notes that",
+  "hold the",
   "key to your",
-  "escape...",
+  "escape.",
   // "Be wary of",
   // "Dr. Nocturne's",
-  // "relentless",
   // "pursuit.",
   // "He will",
   // "follow and try",
@@ -46,7 +45,6 @@ const char* aboutMenu[10] = {
   // "",
   "Creator:",
   "VladWero08",
-  // "",
   "Back",
 };
 
@@ -94,21 +92,20 @@ struct Menu{
   MenuInput menuInput;
 
   Menu(byte RS, byte EN, byte D4, byte D5, byte D6, byte D7, byte dinPin, byte clockPin, byte loadPin, byte buzzerPin, byte lcdBrightnessPin): lcd(RS, EN, D4, D5, D6, D7), lc(dinPin, clockPin, loadPin, 1), game(this->lc){    
-    loadMenuSettings();
-    loadPlayersHighschores();
-    activateMenuSettins();
-
     this->buzzerPin = buzzerPin;
     this->lcdBrightnessPin = lcdBrightnessPin;
-
-    lc.shutdown(0, false);
-    lc.clearDisplay(0);
 
     soundExitBlinking = false;
     currentMenu = 0;
     arrowMenuPosition = 0;
     arrowMenuLinePosition = 0;
     currentMenuPosition = 0; 
+
+    lc.shutdown(0, false);
+    lc.clearDisplay(0);
+    loadMenuSettings();
+    loadPlayersHighschores();
+    activateMenuSettins();
   }
 
   // functions to load and activate settings
@@ -317,7 +314,7 @@ void Menu::mainMenuHandler(Joystick joystick){
     switch (arrowMenuPosition) {
       case 0:
         // start the game
-        game.resetGame();
+        game.resetGame(lc);
         currentMenu = 11;
         break;
       case 1:
@@ -341,7 +338,7 @@ void Menu::mainMenuHandler(Joystick joystick){
 };
 
 void Menu::gameMenuHandler(Joystick joystick){
-  int gameMenuChoice = game.displayMenu(lcd, joystick);
+  int gameMenuChoice = game.play(lc, lcd, joystick);
 
   switch (gameMenuChoice) {
     case 1:

@@ -15,9 +15,9 @@ struct Player{
   byte currentRoom;
 
   // controls the player's visibility
-  bool isActive;
-  // last time when isActive changes its states, in ms
-  unsigned long lastBlinking;
+  bool isDisplayed;
+  // last time when isDisplayed changes its states, in ms
+  unsigned long lastDisplayBlinking;
 
   Player(LedControl &lc){
     initPlayer(lc);
@@ -167,17 +167,17 @@ void Player::movementRightHandler(LedControl &lc){
   in the room.
 */
 void Player::displayPlayer(LedControl &lc){
-  if ((millis() - lastBlinking) > playerBlinkingInterval) {
-    lastBlinking = millis();
-    isActive = !isActive;
-    lc.setLed(0, row, column, isActive);
+  if ((millis() - lastDisplayBlinking) > playerBlinkingInterval) {
+    lastDisplayBlinking = millis();
+    isDisplayed = !isDisplayed;
+    lc.setLed(0, row, column, isDisplayed);
   }
 };
 
 void Player::initPlayer(LedControl &lc){
   row = 1;
   column = 1;
-  isActive = true;
+  isDisplayed = true;
   currentRoom = random(0, roomsSize);
   setRoom(lc, currentRoom);
 }
