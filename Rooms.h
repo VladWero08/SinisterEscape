@@ -83,7 +83,7 @@ void setRoom(LedControl &lc, int room){
 /*
   Reset the matrix values
 */
-void resetMatrix(LedControl lc){
+void resetMatrix(LedControl &lc){
   for (int row = 0; row < matrixSize; row++) {
     for (int col = 0; col < matrixSize; col++) {
       lc.setLed(0, row, col, false);

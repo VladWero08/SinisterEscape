@@ -24,7 +24,7 @@ struct Player{
   };
 
   // functions to handle player's movement
-  void positionWatcher(LedControl &lc, Joystick joystick);
+  void positionWatcher(LedControl &lc, Joystick &joystick);
   void movementUpHandler(LedControl &lc);
   void movementDownHandler(LedControl &lc);
   void movementLeftHandler(LedControl &lc);
@@ -41,7 +41,7 @@ struct Player{
   Listens to the joystick movement, and
   depending on the direction, handle that movement.
 */
-void Player::positionWatcher(LedControl &lc, Joystick joystick){
+void Player::positionWatcher(LedControl &lc, Joystick &joystick){
   if (joystick.direction == joystickUp) {
     movementUpHandler(lc);
   }

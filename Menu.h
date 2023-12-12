@@ -96,6 +96,7 @@ struct Menu{
     this->lcdBrightnessPin = lcdBrightnessPin;
 
     soundExitBlinking = false;
+    
     currentMenu = 0;
     arrowMenuPosition = 0;
     arrowMenuLinePosition = 0;
@@ -103,6 +104,7 @@ struct Menu{
 
     lc.shutdown(0, false);
     lc.clearDisplay(0);
+    
     loadMenuSettings();
     loadPlayersHighschores();
     activateMenuSettins();
@@ -115,28 +117,28 @@ struct Menu{
   
   // functions related to the welcome message  
   void displayWelcomeMessage();
-  void welcomeMessageHandler(Joystick joystick);
+  void welcomeMessageHandler(Joystick &joystick);
 
   // functions related to the main menu
-  void menuSwitch(Joystick joystick);
-  void menuWatcher(int maximumMenuSize, Joystick joystick);
-  void mainMenuHandler(Joystick joystick);
+  void menuSwitch(Joystick &joystick);
+  void menuWatcher(int maximumMenuSize, Joystick &joystick);
+  void mainMenuHandler(Joystick &joystick);
 
   // functions related to game menu
-  void gameMenuHandler(Joystick joystick);
+  void gameMenuHandler(Joystick &joystick);
 
   // funtions related to the highscores menu
-  void highscoresMenuHandler(Joystick joystick);
+  void highscoresMenuHandler(Joystick &joystick);
 
   // functions related to the settings menu
-  void settingsMenuHandler(Joystick joystick);
-  void enterNameHandler(Joystick joystick);
-  void lcdBrightnessMenuHandler(Joystick joystick);
-  void matrixBrightnessMenuHandler(Joystick joystick);
-  void soundToggleHandler(Joystick joystick);
+  void settingsMenuHandler(Joystick &joystick);
+  void enterNameHandler(Joystick &joystick);
+  void lcdBrightnessMenuHandler(Joystick &joystick);
+  void matrixBrightnessMenuHandler(Joystick &joystick);
+  void soundToggleHandler(Joystick &joystick);
 
   // functions related to about menu
-  void aboutMenuHandler(Joystick joystick);
+  void aboutMenuHandler(Joystick &joystick);
 
   // reset functions 
   void resetMenu();
@@ -191,7 +193,7 @@ void Menu::displayWelcomeMessage(){
   displayMessageInCenterWithSkull(lcd, "RUN", 1);
 };
 
-void Menu::welcomeMessageHandler(Joystick joystick){
+void Menu::welcomeMessageHandler(Joystick &joystick){
   if (joystick.currentSwitchStateChanged == HIGH) {
     currentMenu = 1;
     resetMenu();
@@ -200,7 +202,7 @@ void Menu::welcomeMessageHandler(Joystick joystick){
 
 
 
-void Menu::menuSwitch(Joystick joystick){
+void Menu::menuSwitch(Joystick &joystick){
   switch (currentMenu) {
     case 0:
       displayWelcomeMessage();
@@ -262,7 +264,7 @@ void Menu::menuSwitch(Joystick joystick){
   }
 };
 
-void Menu::menuWatcher(int maximumMenuSize, Joystick joystick){
+void Menu::menuWatcher(int maximumMenuSize, Joystick &joystick){
   // joystick is pointing up
   if (joystick.direction == 0) {
     lcd.clear();
@@ -305,7 +307,7 @@ void Menu::menuWatcher(int maximumMenuSize, Joystick joystick){
   }
 };
 
-void Menu::mainMenuHandler(Joystick joystick){
+void Menu::mainMenuHandler(Joystick &joystick){
   // handle the button press when the
   // user is in the main menu
   if (joystick.currentSwitchStateChanged == HIGH) {
@@ -337,7 +339,7 @@ void Menu::mainMenuHandler(Joystick joystick){
   }
 };
 
-void Menu::gameMenuHandler(Joystick joystick){
+void Menu::gameMenuHandler(Joystick &joystick){
   int gameMenuChoice = game.play(lc, lcd, joystick);
 
   switch (gameMenuChoice) {
@@ -353,7 +355,7 @@ void Menu::gameMenuHandler(Joystick joystick){
 }
 
 
-void Menu::highscoresMenuHandler(Joystick joystick){
+void Menu::highscoresMenuHandler(Joystick &joystick){
   // handle the button press when the
   // user is in the highscores menu
   if (joystick.currentSwitchStateChanged == HIGH) {
@@ -373,7 +375,7 @@ void Menu::highscoresMenuHandler(Joystick joystick){
 };
 
 
-void Menu::settingsMenuHandler(Joystick joystick){
+void Menu::settingsMenuHandler(Joystick &joystick){
   // handle the button press when the
   // user is in the settings menu
   if (joystick.currentSwitchStateChanged == HIGH) {
@@ -417,7 +419,7 @@ void Menu::settingsMenuHandler(Joystick joystick){
   }
 };
 
-void Menu::enterNameHandler(Joystick joystick){
+void Menu::enterNameHandler(Joystick &joystick){
   menuInput.userCursorLineHandler(lcd, joystick, letterAlphabet);
 
   if (joystick.currentSwitchStateChanged == HIGH && menuInput.currentCursorLinePosition == 0) {
@@ -456,7 +458,7 @@ void Menu::enterNameHandler(Joystick joystick){
   }
 };
 
-void Menu::lcdBrightnessMenuHandler(Joystick joystick){
+void Menu::lcdBrightnessMenuHandler(Joystick &joystick){
   menuInput.userCursorLineHandler(lcd, joystick, numbersAlphabet);
 
   if (joystick.currentSwitchStateChanged == HIGH && menuInput.currentCursorLinePosition == 0) {
@@ -501,7 +503,7 @@ void Menu::lcdBrightnessMenuHandler(Joystick joystick){
   }
 };
 
-void Menu::matrixBrightnessMenuHandler(Joystick joystick){
+void Menu::matrixBrightnessMenuHandler(Joystick &joystick){
   menuInput.userCursorLineHandler(lcd, joystick, numbersAlphabet);
 
   if (joystick.currentSwitchStateChanged == HIGH && menuInput.currentCursorLinePosition == 0) {
@@ -546,7 +548,7 @@ void Menu::matrixBrightnessMenuHandler(Joystick joystick){
   }
 };
 
-void Menu::soundToggleHandler(Joystick joystick){
+void Menu::soundToggleHandler(Joystick &joystick){
   if (joystick.direction == joystickRight && soundExitBlinking == false) {
     soundExitBlinking = true;
   } 
@@ -576,7 +578,7 @@ void Menu::soundToggleHandler(Joystick joystick){
 
 
 
-void Menu::aboutMenuHandler(Joystick joystick){
+void Menu::aboutMenuHandler(Joystick &joystick){
   // handle the button press when the
   // user is in the about menu
   if (joystick.currentSwitchStateChanged == HIGH) {

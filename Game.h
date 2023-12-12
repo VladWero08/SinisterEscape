@@ -36,21 +36,21 @@ struct Game{
 
   // functions to control the state of game
   void checkPlayerFoundNote();
-  void checkPlayerWin(LedControl &lc, LiquidCrystal lcd);
+  void checkPlayerWin(LedControl &lc, LiquidCrystal &lcd);
 
   // functions to display the game on the LCD
-  int play(LedControl &lc, LiquidCrystal lcd, Joystick joystick);
+  int play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick);
 
   // functions to display game status while running
-  void displayGameRunningMenu(LedControl &lc, LiquidCrystal lcd);
-  void displayLives(LiquidCrystal lcd);
-  void displayNotes(LiquidCrystal lcd);
-  void displayTime(LiquidCrystal lcd);
+  void displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd);
+  void displayLives(LiquidCrystal &lcd);
+  void displayNotes(LiquidCrystal &lcd);
+  void displayTime(LiquidCrystal &lcd);
   
   // functions to handle end of the game
-  int displayGameEndedMenu(LedControl &lc, LiquidCrystal lcd, Joystick joystick);
-  void displayGameEndedMessage(LiquidCrystal lcd);
-  int gameEndedMenuHandler(LedControl &lc, LiquidCrystal lcd, Joystick joystick);
+  int displayGameEndedMenu(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick);
+  void displayGameEndedMessage(LiquidCrystal &lcd);
+  int gameEndedMenuHandler(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick);
   
   // function to reset the game
   void resetGame(LedControl &lc);
@@ -81,7 +81,7 @@ void Game::checkPlayerFoundNote(){
   }
 }
 
-void Game::checkPlayerWin(LedControl &lc, LiquidCrystal lcd){
+void Game::checkPlayerWin(LedControl &lc, LiquidCrystal &lcd){
   // if the number of notes reached 5, it means the player won
   if (notes == notesNeedForWin) {
     // clear the matrix
@@ -103,7 +103,7 @@ void Game::checkPlayerWin(LedControl &lc, LiquidCrystal lcd){
 
   Otherwise, display a game ending message.
 */
-int Game::play(LedControl &lc, LiquidCrystal lcd, Joystick joystick){
+int Game::play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){
   if (gameIsRunning) {
     displayGameRunningMenu(lc, lcd);
     
@@ -121,7 +121,7 @@ int Game::play(LedControl &lc, LiquidCrystal lcd, Joystick joystick){
   }
 };
 
-void Game::displayGameRunningMenu(LedControl &lc, LiquidCrystal lcd){
+void Game::displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd){
   displayLives(lcd);
   displayNotes(lcd);
   displayTime(lcd);
@@ -130,14 +130,14 @@ void Game::displayGameRunningMenu(LedControl &lc, LiquidCrystal lcd){
   note.displayNote(lc, player);
 };
 
-void Game::displayLives(LiquidCrystal lcd){
+void Game::displayLives(LiquidCrystal &lcd){
   for(int i = 0; i < lives; i++) {
     lcd.setCursor(heartsStartPosition + i, 0);
     lcd.write(skullIndex);
   }
 };
 
-void Game::displayNotes(LiquidCrystal lcd){
+void Game::displayNotes(LiquidCrystal &lcd){
   lcd.setCursor(0, 0);
   lcd.print("Notes: ");
 
@@ -146,7 +146,7 @@ void Game::displayNotes(LiquidCrystal lcd){
   lcd.print(notes);
 };
 
-void Game::displayTime(LiquidCrystal lcd){
+void Game::displayTime(LiquidCrystal &lcd){
   // if a 1000 ms have passed, it means a second,
   // so the time will be incremented by 1
   if ((millis() - lastTimeIncrement) >= 1000) {
@@ -170,7 +170,7 @@ void Game::displayTime(LiquidCrystal lcd){
   Finally, the user will be prompted a intermediate menu
   to choose from: to play again OR to return to the main menu.
 */
-int Game::displayGameEndedMenu(LedControl &lc,  LiquidCrystal lcd, Joystick joystick){
+int Game::displayGameEndedMenu(LedControl &lc,  LiquidCrystal &lcd, Joystick &joystick){
   // for 3 seconds the game endings message will be displayed
   if ((millis() - gameEndingTime) < 3000) {
     displayGameEndedMessage(lcd);
@@ -202,7 +202,7 @@ int Game::displayGameEndedMenu(LedControl &lc,  LiquidCrystal lcd, Joystick joys
   Display this message when the game has ended,
   related to the state of the game: win & time / lose
 */
-void Game::displayGameEndedMessage(LiquidCrystal lcd){
+void Game::displayGameEndedMessage(LiquidCrystal &lcd){
   displayMessageInCenter(lcd, "You escaped!", 0);
   displayTimeFromSeconds(lcd, time, 5, 1);
 }
@@ -211,7 +211,7 @@ void Game::displayGameEndedMessage(LiquidCrystal lcd){
   Handle the intermediate menu: if the user
   chooses to play again or to return to the main menu
 */
-int Game::gameEndedMenuHandler(LedControl &lc, LiquidCrystal lcd, Joystick joystick){
+int Game::gameEndedMenuHandler(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){
   // handle up movement of the joystick
   if (joystick.direction == joystickUp && gameEndedMenuArrow == 1) {
     lcd.setCursor(0, gameEndedMenuArrow);

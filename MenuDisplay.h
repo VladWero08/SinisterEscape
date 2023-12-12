@@ -13,7 +13,7 @@ unsigned long lastBlinkingChar = 0;
   Display the given custom character, in the given 
   position, depending on the blinking control variable
 */
-void displayBlinkingInt(LiquidCrystal lcd, const int message, const int line, const int column){
+void displayBlinkingInt(LiquidCrystal &lcd, const int message, const int line, const int column){
     if ((millis() - lastBlinkingChar) > lcdBlinkingInterval) {
       displayBlinking = !displayBlinking;
       lastBlinkingChar = millis();
@@ -32,7 +32,7 @@ void displayBlinkingInt(LiquidCrystal lcd, const int message, const int line, co
   Display the given message, in the given 
   position, depending on the blinking control variable
 */
-void displayBlinkingChar(LiquidCrystal lcd, const char* message, const int line, const int column){
+void displayBlinkingChar(LiquidCrystal &lcd, const char* message, const int line, const int column){
     if ((millis() - lastBlinkingChar) > lcdBlinkingInterval) {
       displayBlinking = !displayBlinking;
       lastBlinkingChar = millis();
@@ -51,7 +51,7 @@ void displayBlinkingChar(LiquidCrystal lcd, const char* message, const int line,
   Display the given message in the middle columns
   of the LCD, knowing the LCD has 16 columns
 */
-void displayMessageInCenter(LiquidCrystal lcd, const char* message,  const int line){
+void displayMessageInCenter(LiquidCrystal &lcd, const char* message,  const int line){
   int spaces = (16 - strlen(message)) / 2;
   lcd.setCursor(spaces, line);
   lcd.print(message);
@@ -61,7 +61,7 @@ void displayMessageInCenter(LiquidCrystal lcd, const char* message,  const int l
   Display the given message in the middle columns
   of the LCD, and besides the message ( left an right), a skull.
 */
-void displayMessageInCenterWithSkull(LiquidCrystal lcd, const char* message,  const int line){
+void displayMessageInCenterWithSkull(LiquidCrystal &lcd, const char* message,  const int line){
   int spaces = (16 - strlen(message)) / 2;
   int firstSkullPosition = spaces - 2;
   int secondSkullPosition = spaces + strlen(message) + 2 - 1;
@@ -90,7 +90,7 @@ void resetBlinkingVariables(){
   If the user is pointing to the exit symbol, 
   it will be blinking, otherwise is just static.
 */
-void displaySoundSetting(LiquidCrystal lcd, bool sound, bool exitIsBlinking){
+void displaySoundSetting(LiquidCrystal &lcd, bool sound, bool exitIsBlinking){
   // display the arrow at the beggining of the input
   lcd.setCursor(0, 0);
   lcd.write(arrowIndex);
@@ -120,7 +120,7 @@ void displaySoundSetting(LiquidCrystal lcd, bool sound, bool exitIsBlinking){
   
   Also, display an arrow pointing to the current option.
 */
-void displayMenu(LiquidCrystal lcd, const char* menu[], int menuIndex, int arrowLinePosition){  
+void displayMenu(LiquidCrystal &lcd, const char* menu[], int menuIndex, int arrowLinePosition){  
   lcd.setCursor(0, arrowLinePosition);
   lcd.write(arrowIndex);
 
@@ -136,7 +136,7 @@ void displayMenu(LiquidCrystal lcd, const char* menu[], int menuIndex, int arrow
   display the ranking symbol, the name and the score of the players
   on each line of the LCD.
 */
-void displayHighscores(LiquidCrystal lcd, const char* playerNames[], const unsigned long scores[], int maxPlayers, int menuIndex, int arrowLinePosition) {
+void displayHighscores(LiquidCrystal &lcd, const char* playerNames[], const unsigned long scores[], int maxPlayers, int menuIndex, int arrowLinePosition) {
   lcd.setCursor(0, arrowLinePosition);
   lcd.write(arrowIndex);
 
@@ -176,7 +176,7 @@ void displayHighscores(LiquidCrystal lcd, const char* playerNames[], const unsig
   Given the position in an LCD, 
   display the time as <minutes>:<seconds>.
 */
-void displayTimeFromSeconds(LiquidCrystal lcd, const unsigned int time, const byte column, const byte line) {
+void displayTimeFromSeconds(LiquidCrystal &lcd, const unsigned int time, const byte column, const byte line) {
   unsigned int minutes = time / 60;
   unsigned int seconds = time % 60;
 

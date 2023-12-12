@@ -36,15 +36,15 @@ struct MenuInput{
   } 
 
   // functions to handle user movements
-  void userInputHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[], const char* userAlphabet[]);
-  void userAlphabetHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[], const int leftBoundary, const int rightBoundary);
-  void userInputControlsHandler(LiquidCrystal lcd, Joystick joystick);
-  
-  int joystickPressControlsHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[]);
-  void userCursorLineHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[]);
+  void userInputHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char* userInput[], const char* userAlphabet[]);
+  void userAlphabetHandler(LiquidCrystal &lcd, Joystick &joystick, const char* userAlphabet[], const int leftBoundary, const int rightBoundary);
+  void userInputControlsHandler(LiquidCrystal &lcd, Joystick &joystick);
+
+  int joystickPressControlsHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char* userInput[]);
+  void userCursorLineHandler(LiquidCrystal &lcd, Joystick &joystick, const char* userAlphabet[]);
 
   // function to display user input
-  void displayUserInput(LiquidCrystal lcd, const char* userInput[]);
+  void displayUserInput(LiquidCrystal &lcd, const char* userInput[]);
 
   // function to reset input variables
   void resetInputVariables();
@@ -60,7 +60,7 @@ struct MenuInput{
 
   Display the user input on line 1 of the LCD.
 */
-void MenuInput::userInputHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[], const char* userAlphabet[]) {
+void MenuInput::userInputHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char* userInput[], const char* userAlphabet[]) {
   // display the arrow at the beggining of the input
   lcd.setCursor(arrowPosition, 0);
   lcd.write(arrowIndex);
@@ -90,7 +90,7 @@ void MenuInput::userInputHandler(LiquidCrystal lcd, Joystick joystick, const int
   displayUserInput(lcd, userInput);
 };
 
-void MenuInput::displayUserInput(LiquidCrystal lcd, const char* userInput[]){
+void MenuInput::displayUserInput(LiquidCrystal &lcd, const char* userInput[]){
   // display the user input
   for (int i = 0; i < currentInputCursorPosition; i++) {
     lcd.setCursor(userInputStartPosition + i, 0);
@@ -108,7 +108,7 @@ void MenuInput::displayUserInput(LiquidCrystal lcd, const char* userInput[]){
   If the movement goes beyond boundaries, shift the
   alphabet one position (to left or right).
 */
-void MenuInput::userAlphabetHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[], const int leftBoundary, const int rightBoundary) {
+void MenuInput::userAlphabetHandler(LiquidCrystal &lcd, Joystick &joystick, const char* userAlphabet[], const int leftBoundary, const int rightBoundary) {
   // if the joystick moved to the left and the cursor position
   // will not move out of the left boundary of the alphabet
   if (joystick.direction == joystickLeft && currentCursorColumnPosition > leftBoundary) {
@@ -153,7 +153,7 @@ void MenuInput::userAlphabetHandler(LiquidCrystal lcd, Joystick joystick, const 
   to which is pointing at blink, at the others static.
   For any empty space, display a simple cursor.
 */
-void MenuInput::userInputControlsHandler(LiquidCrystal lcd, Joystick joystick){
+void MenuInput::userInputControlsHandler(LiquidCrystal &lcd, Joystick &joystick){
   if (joystick.direction == joystickLeft && currentCursorColumnPosition > 0) {
     currentCursorColumnPosition -= 1;
   }
@@ -204,7 +204,7 @@ void MenuInput::userInputControlsHandler(LiquidCrystal lcd, Joystick joystick){
   Listens to joystick presses when the cursor
   is on the 1st line (control line).
 */
-int MenuInput::joystickPressControlsHandler(LiquidCrystal lcd, Joystick joystick, const int maxInput, char* userInput[]){
+int MenuInput::joystickPressControlsHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char* userInput[]){
   // if the joystick has not been pressed, exit
   if (joystick.currentSwitchStateChanged != HIGH) {
     return -1;
@@ -242,7 +242,7 @@ int MenuInput::joystickPressControlsHandler(LiquidCrystal lcd, Joystick joystick
   If the joysticl moved down, and the user is currently
   on the 1st line, switch to the 2nd line.
 */
-void MenuInput::userCursorLineHandler(LiquidCrystal lcd, Joystick joystick, const char* userAlphabet[]){
+void MenuInput::userCursorLineHandler(LiquidCrystal &lcd, Joystick &joystick, const char* userAlphabet[]){
   if (joystick.direction == joystickUp && currentCursorLinePosition == 1) {
     // when switching from the alphabet to the controls, 
     // update the column cursor to proportionally point to a LCD
