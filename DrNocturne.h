@@ -6,9 +6,15 @@
 #include "Player.h"
 #include "Utils.h"
 
+// variables to make a blinking effect
+// for how many seconds is the Dr. visible
 const int drNocturneActiveBlinkingInterval = 500;
+// fot how many seconds is the Dr. invisible
 const byte drNocturneInactiveBlinkingInterval = 100;
+
+// interval time between movements on level 1
 const int movementCooldownLevel1 = 1000;
+// interval time between movements on level 2
 const int movementCooldownLevel2 = 750;
 
 struct DrNocturne{
@@ -17,10 +23,10 @@ struct DrNocturne{
   byte currentRoom;
   byte level;
 
-  // controls the note's visibility
+  // controls the Dr's visibility
   bool isDisplay;
-  // controls if Dr. Nocturne needs to wait for the player
-  // to get closer
+  // controls if Dr. Nocturne needs to wait 
+  // for the player to get closer
   bool isWaiting;
   // controls if Dr. Nocturne is chasing the player
   bool isChasing;
@@ -74,8 +80,8 @@ void DrNocturne::spawnInRoom(){
   row = random(0, matrixSize);
   column = random(0, matrixSize);
 
-  // while the position generated is invalid,
-  // generate new positions and check their validity
+  // generate row and column until
+  // the position is different from a wall 
   while (rooms[currentRoom][row][column] == true){
     row = random(0, matrixSize);
     column = random(0, matrixSize);
@@ -83,7 +89,18 @@ void DrNocturne::spawnInRoom(){
 };
 
 
+/*
+  Dr. Nocturne waits for the player to come closer. 
+  The Euclidean distance between the player 
+  and the Dr. needs to be:
 
+  -> level 1: Dr. Nocturne is inactive
+  -> level 2: <= 5
+  -> level 3: <= 3
+
+  When the player is close enough, Dr. Nocturne exits
+  the waiting mode and enters in the chasing one.
+*/
 void DrNocturne::isWaitingToChase(Player player){
   // if Dr. Nocturne and the player are not in 
   // the same room, exit
@@ -95,24 +112,30 @@ void DrNocturne::isWaitingToChase(Player player){
   // calculate the euclidean distance between Dr and the player
   float distance = euclideanDistance(player.row, player.column, row, column);
 
-  // level 1: start following the player when 
+  // level 2: start following the player when 
   // the distance is at most 5
-  if (level == 1 && distance <= 5) {
+  if (level == 2 && distance <= 5) {
+    // deactivate the waiting state
     isWaiting = false;
+    // activate the chasing state
     isChasing = true;
     lastMovement = millis();
   }
 
-  // level 2: start following the player when 
+  // level 3: start following the player when 
   // the distance is at most 3, which is harder than level 1
-  if (level == 2 && distance <= 3) {
+  if (level == 3 && distance <= 3) {
+    // deactivate the waiting state
     isWaiting = false;
+    // activate the chasing state
     isChasing = true;
     lastMovement = millis();
   }
 }
 
 void DrNocturne::chase(LedControl &lc, Player player){
+  // depending on the level, Dr. Nocturne has a cooldown
+  // between consecutive movements
   switch (level) {
     case 1:
       if ((millis() - lastMovement) < movementCooldownLevel1) {
@@ -128,17 +151,19 @@ void DrNocturne::chase(LedControl &lc, Player player){
       break;
   }
 
-  // set the current old position to false, 
+  // set the old position to false, 
   // to avoid letting the old position be active 
-  // simultaneously with the new position
+  // in the same time with the new position
   lc.setLed(0, row, column, false);
   lastMovement = millis();
 
-  // calculate the euclidean distance from each possible move
-  // to the players current position
+  // try to calculate the euclidean distance from each possible move
+  // to the player's current position; 
+  // set them as 100, in case a movement
+  // is not possible, its initial value cannot influence the minimum
   float moveUp = 100, moveDown = 100, moveLeft = 100, moveRight = 100;
 
-  // only generate the euclidean distance if the movement is a valid one,
+  // calculate the euclidean distance if the movement is a valid one,
   // aka it is not getting the doctor out of the matrix
   if (row - 1 >= 0) { 
     if (rooms[currentRoom][row - 1][column] == false) {
@@ -146,7 +171,7 @@ void DrNocturne::chase(LedControl &lc, Player player){
     }
   } 
 
-  if (row + 1 <= 7) { 
+  if (row + 1 <= matrixSize - 1) { 
     if (rooms[currentRoom][row + 1][column] == false) {
       moveDown = euclideanDistance(player.row, player.column, row + 1, column);
     }
@@ -158,14 +183,16 @@ void DrNocturne::chase(LedControl &lc, Player player){
     }
   }
   
-  if (column + 1 <= 7) {
+  if (column + 1 <= matrixSize - 1) {
     if (rooms[currentRoom][row ][column + 1] == false) {
       moveRight = euclideanDistance(player.row, player.column, row, column + 1);
     }
   }
 
+  // calculate the minimum between all 4 possible movements
   float optimalMove = min(min(min(moveUp, moveDown), moveLeft), moveRight);
 
+  // execute the movement
   if (optimalMove == moveUp) {
     row -= 1;
   } else if (optimalMove == moveDown) {
@@ -183,7 +210,12 @@ void DrNocturne::levelUp(){
 
 /*
   Display the current position of Dr. Nocturne
-  in the room.
+  in the room, only if he is active AND in the same
+  room with the player.
+
+  It is visible for 500 ms and invisible for 100,
+  to make a blinking effect that is identical with the 
+  note's blinking effect.
 */
 void DrNocturne::display(LedControl &lc, Player player){
   // if the Doctor is not chasing, do not display his position

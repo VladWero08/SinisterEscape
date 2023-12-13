@@ -6,7 +6,7 @@
 #include "JoyStick.h"
 #include "Rooms.h"
 
-// interval in ms between player's position blinking
+// interval in ms between player's blinking position 
 const byte playerBlinkingInterval = 50;
 
 struct Player{
@@ -16,16 +16,29 @@ struct Player{
 
   // controls the player's visibility
   bool isDisplayed;
+  // controls the winning state of the player
   bool isWinning;
-  // last time when isDisplayed changes its states, in ms
+  // last time when isDisplayed changed its state, in ms
   unsigned long lastDisplayBlinking;
 
   Player(LedControl &lc){
-    initPlayer(lc);
+    // start from position 1, 1 in the room
+    row = 1;
+    column = 1;
+
+    // choose the room randomly and  
+    // display the room on the matrix
+    currentRoom = random(0, roomsSize);
+    setRoom(lc, currentRoom);
+
+    // the player starts from a losing state
+    isWinning = false;
+    // the player is being displayed on the matrix
+    isDisplayed = true;
   };
 
   // functions to handle player's movement
-  void positionWatcher(LedControl &lc, Joystick &joystick);
+  void movementWatcher(LedControl &lc, Joystick &joystick);
   void movementUpHandler(LedControl &lc);
   void movementDownHandler(LedControl &lc);
   void movementLeftHandler(LedControl &lc);
@@ -35,14 +48,14 @@ struct Player{
   void display(LedControl &lc);
 
   // function to initate the players position;
-  void initPlayer(LedControl &lc);
+  void reset(LedControl &lc);
 };
 
 /*
   Listens to the joystick movement, and
-  depending on the direction, handle that movement.
+  depending on the direction, handles that movement.
 */
-void Player::positionWatcher(LedControl &lc, Joystick &joystick){
+void Player::movementWatcher(LedControl &lc, Joystick &joystick){
   if (joystick.direction == joystickUp) {
     movementUpHandler(lc);
   }
@@ -68,7 +81,7 @@ void Player::movementUpHandler(LedControl &lc){
       return;
     }
 
-    // unset the current position
+    // otherwise, unset the current position
     lc.setLed(0, row, column, false);
     // move up
     row -= 1;
@@ -81,6 +94,8 @@ void Player::movementUpHandler(LedControl &lc){
     currentRoom = roomsCommunication[currentRoom][joystickUp];
     setRoom(lc, currentRoom);
 
+    // if the player moved up through a door, that means
+    // it is now currently on the last row of the new room
     row = matrixSize - 1;
   }
 };
@@ -93,7 +108,7 @@ void Player::movementDownHandler(LedControl &lc){
       return;
     }
 
-    // unset the current position
+    // otherwise, unset the current position
     lc.setLed(0, row, column, false);
     // move down
     row += 1;
@@ -107,6 +122,8 @@ void Player::movementDownHandler(LedControl &lc){
     currentRoom = roomsCommunication[currentRoom][joystickDown];
     setRoom(lc, currentRoom);
     
+    // if the player moved down through a door, that means
+    // it is now currently on the first row of the new room
     row = 0;
   }
 };
@@ -119,7 +136,7 @@ void Player::movementLeftHandler(LedControl &lc){
       return;
     }
     
-    // unset the current position
+    // otherwise, unset the current position
     lc.setLed(0, row, column, false);
     // move to the left
     column -= 1;
@@ -127,12 +144,13 @@ void Player::movementLeftHandler(LedControl &lc){
   // if the player is already on the first column
   // and tries to move to the left, it means it wants to access a door
   else if (column == 0) {
-    
     // move to the next room according to 
     // the movement matrix
     currentRoom = roomsCommunication[currentRoom][joystickLeft];
     setRoom(lc, currentRoom);
   
+    // if the player moved to the left through a door, that means
+    // it is now currently on the last column of the new room
     column = matrixSize - 1;
   }
 };
@@ -145,7 +163,7 @@ void Player::movementRightHandler(LedControl &lc){
       return;
     }
 
-    // unset the current position
+    // otherwise, unset the current position
     lc.setLed(0, row, column, false);
     // move to the right
     column += 1;
@@ -159,13 +177,16 @@ void Player::movementRightHandler(LedControl &lc){
     currentRoom = roomsCommunication[currentRoom][joystickRight];
     setRoom(lc, currentRoom);
 
+    // if the player moved to the right through a door, that means
+    // it is now currently on the first column of the new room
     column = 0;
   }
 };
 
 /*
-  Display the current position of the player 
-  in the room.
+  Display the current position of the player in
+  a blinking mode. Once 50 ms. make the player blink
+  so it is easily distinguishable.
 */
 void Player::display(LedControl &lc){
   if ((millis() - lastDisplayBlinking) > playerBlinkingInterval) {
@@ -175,7 +196,7 @@ void Player::display(LedControl &lc){
   }
 };
 
-void Player::initPlayer(LedControl &lc){
+void Player::reset(LedControl &lc){
   row = 1;
   column = 1;
   isWinning = false;

@@ -36,7 +36,7 @@ struct Note{
 
 /*
   Spawn a note in a random room,
-  in a random, but valid position in that room
+  in a random, but valid position in that room.
 */
 void Note::spawnNoteRandomly(){
   currentRoom = random(0, roomsSize);  
@@ -45,7 +45,7 @@ void Note::spawnNoteRandomly(){
 
 /*
   Spawn the note in a different room
-  from the room the player is currently in
+  from the room the player is currently in.
 */
 void Note::spawnNoteDifferentRoom(const byte playerRoom){
   currentRoom = random(0, roomsSize);
@@ -75,7 +75,11 @@ void Note::spawnInRoom(){
 
 /*
   Display the current position of the note 
-  in the room.
+  in the room. 
+  
+  It is visible for 500 ms and invisible for 100,
+  to make a blinking effect that is not similar with the blinking effect
+  of the player. 
 */
 void Note::display(LedControl &lc, Player player){
   // if the note and the player are placed in different rooms, exit
