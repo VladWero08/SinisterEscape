@@ -23,7 +23,6 @@ const int gameEndingTimeInterval = 3000;
 const byte heartsStartPosition = 13;
 // column position of the time in the live game menu
 const byte timePosition = 6;
-
 const byte notesNeedForWin = 6;
 
 struct Game{
@@ -213,8 +212,9 @@ int Game::play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){
     checkPlayerWon(lc, lcd);
     checkPlayerLost(lc, lcd);
 
-    // increase time constantly
+    // increase time and display player constantly
     increaseTime();
+    player.display(lc);
     return -1;
   } else {
     return displayGameEndedMenu(lc, lcd, joystick);
@@ -248,8 +248,6 @@ void Game::displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd){
   displayNotes(lcd);
   displayLevel(lcd);
   displayTime(lcd);
-
-  player.display(lc);
 };
 
 void Game::displayLives(LiquidCrystal &lcd){
