@@ -13,6 +13,7 @@
 #include "DrNocturne.h"
 #include "Utils.h"
 
+const int gameSpecialMomentsInterval = 2000;
 const byte heartsStartPosition = 13;
 const byte notesNeedForWin = 6;
 
@@ -26,6 +27,7 @@ struct Game{
 
   bool gameIsRunning = true;
   unsigned long gameEndingTime = 0;
+  unsigned long gameSpecialMoments = 0;
   byte gameEndedMenuArrow = 0; 
 
   Player player;
@@ -37,7 +39,7 @@ struct Game{
   }
 
   // functions to control the state of game
-  void checkPlayerFoundNote();
+  void checkPlayerFoundNote(LiquidCrystal &lcd);
   void checkPlayerWasFoundByDoctor(LiquidCrystal &lcd);
   void checkPlayerWon(LedControl &lc, LiquidCrystal &lcd);
   void checkPlayerLost(LedControl &lc, LiquidCrystal &lcd);
@@ -49,6 +51,7 @@ struct Game{
   void displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd);
   void displayLives(LiquidCrystal &lcd);
   void displayNotes(LiquidCrystal &lcd);
+  void increaseTime();
   void displayTime(LiquidCrystal &lcd);
   
   // functions to handle end of the game
@@ -60,7 +63,7 @@ struct Game{
   void resetGame(LedControl &lc);
 };
 
-void Game::checkPlayerFoundNote(){
+void Game::checkPlayerFoundNote(LiquidCrystal &lcd){
   // if the player and the note are in different rooms, exit
   if (player.currentRoom != note.currentRoom)
     return;
@@ -84,16 +87,30 @@ void Game::checkPlayerFoundNote(){
     note.spawnNoteRandomly();
   }
 
-  // if the user reached 2 notes, spawn Dr. Nocturne
-  if (notes == 2) {
-    doctor.isWaiting = true;
+  // when the player reaches 2 / 4 notes, a special message
+  // will be displayed on the LCD
+  if (notes == 2 || notes == 4) {
+    lcd.clear();
+    gameSpecialMoments = millis();
   }
 
   // if the user reached 4 notes, level up Dr. Nocturne
   // and spawn him randomly
   if (notes == 4) {
     doctor.levelUp();
+  }
+
+  // if the user reached 2 notes, spawn Dr. Nocturne,
+  // and until reaching 4 notes, the Dr. spawns randomly
+  if (notes >= 2 && notes <= 3) {
     doctor.spawnDoctorRandomly();
+    doctor.isWaiting = true;
+  }
+
+  // for the last two notes, the doctor will spawn in the
+  // same room with the player
+  if (notes >= 4 && notes <= 5) {
+    doctor.spawnDoctorSameRoom(player.currentRoom);
     doctor.isWaiting = true;
   }
 }
@@ -106,7 +123,7 @@ void Game::checkPlayerWasFoundByDoctor(LiquidCrystal &lcd){
     // decrease the number of lives
     lcd.clear();
     lives -= 1;
-    // make the doctor inactie
+    // make the doctor inactive
     doctor.isWaiting = false;
     doctor.isChasing = false;
   }
@@ -162,9 +179,9 @@ int Game::play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){
     if (doctor.isChasing == true) {
       // if the player escaped from the room where the
       // doctor was, the doctor stops chasing
-      // if (player.currentRoom != doctor.currentRoom) {
-      //   doctor.isChasing = false;
-      // }
+      if (player.currentRoom != doctor.currentRoom) {
+        doctor.isChasing = false;
+      }
 
       // doctor is chasing the player
       doctor.chase(lc, player);
@@ -177,7 +194,7 @@ int Game::play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){
     if (doctor.isWaiting == false && doctor.isChasing == false) {
       note.display(lc, player);
       // check if the player found any notes
-      checkPlayerFoundNote();
+      checkPlayerFoundNote(lcd);
     }
 
     // check if the player found enough notes
@@ -189,9 +206,28 @@ int Game::play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){
   } else {
     return displayGameEndedMenu(lc, lcd, joystick);
   }
+
+  // increase time constantly
+  increaseTime();
 };
 
 void Game::displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd){
+  if ((millis() - gameSpecialMoments) < gameSpecialMomentsInterval && notes == 2) {
+    displayMessageInCenter(lcd, "Dr. Nocturne", 0);
+    displayMessageInCenter(lcd, "was spawned...", 1);
+    return;
+  }
+
+  if ((millis() - gameSpecialMoments) < gameSpecialMomentsInterval && notes == 4) {
+    displayMessageInCenter(lcd, "Dr. Nocturne", 0);
+    displayMessageInCenter(lcd, "is faster...", 1);
+    return;
+  }
+
+  if ((millis() - gameSpecialMoments) >= gameSpecialMomentsInterval && (millis() - gameSpecialMoments) <= gameSpecialMomentsInterval + 100) {
+    lcd.clear();
+  }
+
   displayLives(lcd);
   displayNotes(lcd);
   displayTime(lcd);
@@ -216,18 +252,20 @@ void Game::displayNotes(LiquidCrystal &lcd){
 };
 
 void Game::displayTime(LiquidCrystal &lcd){
+  lcd.setCursor(0, 1);
+  lcd.print("Time: ");
+  
+  displayTimeFromSeconds(lcd, time, 6, 1);
+};
+
+void Game::increaseTime(){
   // if a 1000 ms have passed, it means a second,
   // so the time will be incremented by 1
   if ((millis() - lastTimeIncrement) >= 1000) {
     lastTimeIncrement = millis();
     time += 1;
   }
-
-  lcd.setCursor(0, 1);
-  lcd.print("Time: ");
-  
-  displayTimeFromSeconds(lcd, time, 6, 1);
-};
+}
 
 
 /*

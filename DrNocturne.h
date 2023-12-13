@@ -8,7 +8,8 @@
 
 const int drNocturneActiveBlinkingInterval = 500;
 const byte drNocturneInactiveBlinkingInterval = 100;
-const int movementCooldown = 1000;
+const int movementCooldownLevel1 = 1000;
+const int movementCooldownLevel2 = 750;
 
 struct DrNocturne{
   byte row;
@@ -112,10 +113,24 @@ void DrNocturne::isWaitingToChase(Player player){
 }
 
 void DrNocturne::chase(LedControl &lc, Player player){
-  if ((millis() - lastMovement) < movementCooldown) {
-    return;
+  switch (level) {
+    case 1:
+      if ((millis() - lastMovement) < movementCooldownLevel1) {
+        return;
+      }
+      break;
+    case 2:
+      if ((millis() - lastMovement) < movementCooldownLevel1) {
+        return;
+      }
+      break;
+    default:
+      break;
   }
 
+  // set the current old position to false, 
+  // to avoid letting the old position be active 
+  // simultaneously with the new position
   lc.setLed(0, row, column, false);
   lastMovement = millis();
 
