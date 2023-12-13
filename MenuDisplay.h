@@ -132,47 +132,6 @@ void displayMenu(LiquidCrystal &lcd, const char* menu[], int menuIndex, int arro
 };
 
 /*
-  Given an array of player names, their scores, and a index,
-  display the ranking symbol, the name and the score of the players
-  on each line of the LCD.
-*/
-void displayHighscores(LiquidCrystal &lcd, const char* playerNames[], const unsigned long scores[], int maxPlayers, int menuIndex, int arrowLinePosition) {
-  lcd.setCursor(0, arrowLinePosition);
-  lcd.write(arrowIndex);
-
-  if (menuIndex < maxPlayers - 1) {
-      for (int i = 0; i < 2; i++) {
-      // display the symbol for the podium
-      lcd.setCursor(2, i);
-      lcd.print(menuIndex + i + 1);
-
-      // display the name of the player
-      lcd.setCursor(4, i);
-      lcd.print(playerNames[menuIndex + i]);
-      
-      // display the score of the player
-      lcd.setCursor(8, i);
-      lcd.print(scores[menuIndex + i]);
-    }
-  } else {
-      // display the symbol for the podium
-      lcd.setCursor(2, 0);
-      lcd.print(menuIndex + 1);
-
-      // display the name of the player
-      lcd.setCursor(4, 0);
-      lcd.print(playerNames[menuIndex]);
-      
-      // display the score of the player
-      lcd.setCursor(8, 0);
-      lcd.print(scores[menuIndex]);
-
-      lcd.setCursor(2, 1);
-      lcd.print("Back");
-  }
-};
-
-/*
   Given the position in an LCD, 
   display the time as <minutes>:<seconds>.
 */
@@ -208,6 +167,45 @@ void displayTimeFromSeconds(LiquidCrystal &lcd, const unsigned int time, const b
   } else {
     lcd.setCursor(column + 3, line);
     lcd.print(seconds);
+  }
+};
+
+/*
+  Given an array of player names, their scores, and a index,
+  display the ranking symbol, the name and the score of the players
+  on each line of the LCD.
+*/
+void displayHighscores(LiquidCrystal &lcd, const char* playerNames[], const unsigned long scores[], int maxPlayers, int menuIndex, int arrowLinePosition) {
+  lcd.setCursor(0, arrowLinePosition);
+  lcd.write(arrowIndex);
+
+  if (menuIndex < maxPlayers - 1) {
+      for (int i = 0; i < 2; i++) {
+      // display the symbol for the podium
+      lcd.setCursor(2, i);
+      lcd.print(menuIndex + i + 1);
+
+      // display the name of the player
+      lcd.setCursor(4, i);
+      lcd.print(playerNames[menuIndex + i]);
+      
+      // display the score of the player
+      displayTimeFromSeconds(lcd, scores[menuIndex + i], 8, i);
+    }
+  } else {
+      // display the symbol for the podium
+      lcd.setCursor(2, 0);
+      lcd.print(menuIndex + 1);
+
+      // display the name of the player
+      lcd.setCursor(4, 0);
+      lcd.print(playerNames[menuIndex]);
+      
+      // display the score of the player
+      displayTimeFromSeconds(lcd, scores[menuIndex], 8, 0);
+
+      lcd.setCursor(2, 1);
+      lcd.print("Back");
   }
 };
 

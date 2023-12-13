@@ -51,6 +51,7 @@ struct Game{
   void displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd);
   void displayLives(LiquidCrystal &lcd);
   void displayNotes(LiquidCrystal &lcd);
+  void displayLevel(LiquidCrystal &lcd);
   void increaseTime();
   void displayTime(LiquidCrystal &lcd);
   
@@ -165,6 +166,9 @@ void Game::checkPlayerLost(LedControl &lc, LiquidCrystal &lcd){
   Otherwise, display a game ending message.
 */
 int Game::play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){
+  // increase time constantly
+  increaseTime();
+  
   if (gameIsRunning) {
     displayGameRunningMenu(lc, lcd);
     
@@ -206,9 +210,6 @@ int Game::play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){
   } else {
     return displayGameEndedMenu(lc, lcd, joystick);
   }
-
-  // increase time constantly
-  increaseTime();
 };
 
 void Game::displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd){
@@ -230,6 +231,7 @@ void Game::displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd){
 
   displayLives(lcd);
   displayNotes(lcd);
+  displayLevel(lcd);
   displayTime(lcd);
 
   player.display(lc);
@@ -242,20 +244,26 @@ void Game::displayLives(LiquidCrystal &lcd){
   }
 };
 
-void Game::displayNotes(LiquidCrystal &lcd){
+void Game::displayLevel(LiquidCrystal &lcd){
   lcd.setCursor(0, 0);
+  lcd.print("LVL");
+
+  lcd.setCursor(3, 0);
+  lcd.print(doctor.level);
+}
+
+void Game::displayNotes(LiquidCrystal &lcd){
+  lcd.setCursor(0, 1);
   lcd.print("Notes: ");
 
   // 7 is the length of "Notes "
-  lcd.setCursor(7, 0);
+  lcd.setCursor(7, 1);
   lcd.print(notes);
 };
 
 void Game::displayTime(LiquidCrystal &lcd){
-  lcd.setCursor(0, 1);
-  lcd.print("Time: ");
-  
-  displayTimeFromSeconds(lcd, time, 6, 1);
+  Serial.println(time);
+  displayTimeFromSeconds(lcd, time, 6, 0);
 };
 
 void Game::increaseTime(){
