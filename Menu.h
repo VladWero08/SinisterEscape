@@ -21,9 +21,9 @@ const char* mainMenuMessages[mainMenuMessagesSize] = {
   "Start game", "Highscore", "Settings", "About",
 };
 
-const byte settingsMenuSize = 5;
+const byte settingsMenuSize = 6;
 const char* settingsMenu[settingsMenuSize] = {
-  "Enter name", "LCD bright", "Matrix bright", "Sound", "Back"
+  "Enter name", "LCD bright", "Matrix bright", "Sound", "Reset scores", "Back"
 };
 
 const byte gameEndedMenuSize = 2;
@@ -149,6 +149,7 @@ struct Menu{
 
   // reset functions 
   void resetMenu();
+  void resetHighscores();
   void resetUserInput(char* userInput[], byte userInputSize);
   byte setByteUserInput(byte number, char* userInput[]);
 };
@@ -433,6 +434,10 @@ void Menu::settingsMenuHandler(Joystick &joystick){
         currentMenu = 33;
         break;
       case 4:
+        resetHighscores();
+        currentMenu = 3;
+        break;
+      case 5:
         // go back to the main menu
         currentMenu = 1;
         break;
@@ -660,6 +665,18 @@ void Menu::resetMenu(){
   arrowMenuLinePosition = 0;
   currentMenuPosition = 0;
 };
+
+void Menu::resetHighscores(){
+  for (int i = 0; i < maximumHighscores; i++) {
+    highscores[i] = 900;
+
+    for (int letter = 0; letter < 3; letter++) {
+      playerNames[i][letter] = "";
+    }
+  }
+
+  writeHighscores();
+}
 
 void Menu::resetUserInput(char* userInput[], byte userInputSize){
   for (int i = 0; i < userInputSize; i++) {
