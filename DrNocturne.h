@@ -2,6 +2,8 @@
 #ifndef DR_NOCTURNE_H
 #define DR_NOCTURNE_H
 
+#include <LiquidCrystal.h>
+
 #include "Rooms.h"
 #include "Player.h"
 #include "Utils.h"
@@ -53,6 +55,7 @@ struct DrNocturne{
 
   // function to display the note in the room
   void display(LedControl &lc, Player player);
+  void displayLevel(LiquidCrystal &lcd);
   void reset();
 };
 
@@ -243,6 +246,14 @@ void DrNocturne::display(LedControl &lc, Player player){
     }
   }
 };
+
+void DrNocturne::displayLevel(LiquidCrystal &lcd){
+  lcd.setCursor(0, 0);
+  lcd.print("LVL");
+
+  lcd.setCursor(3, 0);
+  lcd.print(level);
+}
 
 void DrNocturne::reset(){
   isWaiting = false;

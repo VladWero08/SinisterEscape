@@ -3,6 +3,8 @@
 #define PLAYER_H
 
 #include <LedControl.h>
+#include <LiquidCrystal.h>
+
 #include "JoyStick.h"
 #include "Rooms.h"
 
@@ -14,6 +16,9 @@ struct Player{
   byte column;
   byte currentRoom;
 
+  byte notes;
+  byte lives;
+
   // controls the player's visibility
   bool isDisplayed;
   // controls the winning state of the player
@@ -23,7 +28,7 @@ struct Player{
   // last time when isDisplayed changed its state, in ms
   unsigned long lastDisplayBlinking;
 
-  Player(LedControl &lc){
+  Player(LedControl &lc): notes(0), lives(3){
     // start from position 1, 1 in the room
     row = 1;
     column = 1;
@@ -50,6 +55,8 @@ struct Player{
 
   // function to display the player in the room
   void display(LedControl &lc);
+  void displayNotes(LiquidCrystal &lcd);
+  void displayLives(LiquidCrystal &lcd, byte heartsStartPosition);
 
   // function to initate the players position;
   void reset(LedControl &lc);
@@ -200,14 +207,35 @@ void Player::display(LedControl &lc){
   }
 };
 
+void Player::displayNotes(LiquidCrystal &lcd){
+  lcd.setCursor(0, 1);
+  lcd.print("Notes: ");
+
+  // 7 is the length of "Notes "
+  lcd.setCursor(7, 1);
+  lcd.print(notes);
+};
+
+void Player::displayLives(LiquidCrystal &lcd, byte heartsStartPosition){
+  for(int i = 0; i < lives; i++) {
+    lcd.setCursor(heartsStartPosition + i, 0);
+    lcd.write(skullIndex);
+  }
+};
+
 void Player::reset(LedControl &lc){
   row = 1;
   column = 1;
+
+  currentRoom = random(0, roomsSize);
+  setRoom(lc, currentRoom);
+
+  notes = 0;
+  lives = 3;
+  
   isWinning = false;
   isDisplayed = true;
   hasHighscore = false;
-  currentRoom = random(0, roomsSize);
-  setRoom(lc, currentRoom);
 }
 
 #endif

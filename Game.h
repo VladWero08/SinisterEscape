@@ -18,9 +18,9 @@
 // duration of transition between messages
 const int transitionTime = 100;
 // duration of special messages during the game, on the display
-const int gameSpecialMomentsTimeInterval = 2000;
+const int gameSpecialMomentsTimeInterval = 3000;
 // duration of message after the game has eneded
-const int gameEndingTimeInterval = 3000;
+const int gameEndingTimeInterval = 5000;
 // column position of the hearts in the live game menu
 const byte heartsStartPosition = 13;
 // column position of the time in the live game menu
@@ -32,9 +32,6 @@ struct Game{
   Note note;
   DrNocturne doctor;
   
-  byte notes;
-  byte lives;
-
   // time since the game started
   unsigned long time;
   // last time when the time was incremented
@@ -50,7 +47,7 @@ struct Game{
   unsigned long *highscores;
   byte highscoresSize;
 
-  Game(LedControl &lc, unsigned long (&highScores)[3], byte highScoresSize): time(0), notes(0), lives(3), player(lc), highscores(highScores), highscoresSize(highScoresSize){
+  Game(LedControl &lc, unsigned long (&highScores)[3], byte highScoresSize): time(0), player(lc), highscores(highScores), highscoresSize(highScoresSize){
     lastTimeIncrement = millis();
   }
 
@@ -66,9 +63,6 @@ struct Game{
 
   // functions to display game status while running
   void displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd);
-  void displayLives(LiquidCrystal &lcd);
-  void displayNotes(LiquidCrystal &lcd);
-  void displayLevel(LiquidCrystal &lcd);
   void displayTime(LiquidCrystal &lcd);
   void increaseTime();
   
@@ -93,12 +87,12 @@ void Game::checkPlayerFoundNote(LiquidCrystal &lcd){
 
   // if this section of the function was reached, it means
   // that the player has found the note
-  notes += 1;
+  player.notes += 1;
 
   // if the player already collected 3 notes,
   // make sure the note spawns in a different room 
   // from the room the player is currently in
-  if (notes >= 3) {
+  if (player.notes >= 3) {
     note.spawnNoteDifferentRoom(player.currentRoom);
   } 
   // otherwise, just spawn the note randomly
@@ -108,7 +102,7 @@ void Game::checkPlayerFoundNote(LiquidCrystal &lcd){
 
   // when the player reaches 2 / 4 notes, a special message
   // will be displayed on the LCD and the level will be increased
-  if (notes == 2 || notes == 4) {
+  if (player.notes == 2 || player.notes == 4) {
     lcd.clear();
     doctor.levelUp();
     gameSpecialMomentsTime = millis();
@@ -116,14 +110,14 @@ void Game::checkPlayerFoundNote(LiquidCrystal &lcd){
 
   // if the user reached 2 notes, spawn Dr. Nocturne,
   // and until reaching 4 notes, the Dr. spawns randomly
-  if (notes >= 2 && notes <= 3) {
+  if (player.notes >= 2 && player.notes <= 3) {
     doctor.spawnDoctorRandomly();
     doctor.isWaiting = true;
   }
 
   // for the last two notes, the doctor will spawn in the
   // same room with the player
-  if (notes >= 4 && notes <= 5) {
+  if (player.notes >= 4 && player.notes <= 5) {
     doctor.spawnDoctorSameRoom(player.currentRoom);
     doctor.isWaiting = true;
   }
@@ -136,7 +130,7 @@ void Game::checkPlayerWasFoundByDoctor(LiquidCrystal &lcd){
     // firstly clear the lcd, than
     // decrease the number of lives
     lcd.clear();
-    lives -= 1;
+    player.lives -= 1;
     // make the doctor inactive
     doctor.isWaiting = false;
     doctor.isChasing = false;
@@ -146,7 +140,7 @@ void Game::checkPlayerWasFoundByDoctor(LiquidCrystal &lcd){
 void Game::checkPlayerWon(LedControl &lc, LiquidCrystal &lcd){
   // check if the number of notes reached the number
   // needed for the player to win
-  if (notes == 0) {
+  if (player.notes == 0) {
     gameEndingTime = millis();
     // clear the matrix
     resetMatrix(lc);
@@ -164,7 +158,7 @@ void Game::checkPlayerWon(LedControl &lc, LiquidCrystal &lcd){
 
 void Game::checkPlayerLost(LedControl &lc, LiquidCrystal &lcd){
   // if the player has no lives left, it means that he lost
-  if (lives == 0) {
+  if (player.lives == 0) {
     gameEndingTime = millis();
     // clear the matrix
     resetMatrix(lc);
@@ -252,14 +246,14 @@ void Game::play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){
 
 void Game::displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd){
   // display a special message when the player reached level 2
-  if ((millis() - gameSpecialMomentsTime) < gameSpecialMomentsTimeInterval && notes == 2) {
+  if ((millis() - gameSpecialMomentsTime) < gameSpecialMomentsTimeInterval && player.notes == 2) {
     displayMessageInCenter(lcd, "Dr. Nocturne", 0);
     displayMessageInCenter(lcd, "was spawned...", 1);
     return;
   }
 
   // display a special message when the player reached level 3
-  if ((millis() - gameSpecialMomentsTime) < gameSpecialMomentsTimeInterval && notes == 4) {
+  if ((millis() - gameSpecialMomentsTime) < gameSpecialMomentsTimeInterval && player.notes == 4) {
     displayMessageInCenter(lcd, "Dr. Nocturne", 0);
     displayMessageInCenter(lcd, "is faster...", 1);
     return;
@@ -273,34 +267,10 @@ void Game::displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd){
   }
 
   // display the usual game menu
-  displayLives(lcd);
-  displayNotes(lcd);
-  displayLevel(lcd);
+  player.displayLives(lcd, heartsStartPosition);
+  player.displayNotes(lcd);
+  doctor.displayLevel(lcd);
   displayTime(lcd);
-};
-
-void Game::displayLives(LiquidCrystal &lcd){
-  for(int i = 0; i < lives; i++) {
-    lcd.setCursor(heartsStartPosition + i, 0);
-    lcd.write(skullIndex);
-  }
-};
-
-void Game::displayLevel(LiquidCrystal &lcd){
-  lcd.setCursor(0, 0);
-  lcd.print("LVL");
-
-  lcd.setCursor(3, 0);
-  lcd.print(doctor.level);
-}
-
-void Game::displayNotes(LiquidCrystal &lcd){
-  lcd.setCursor(0, 1);
-  lcd.print("Notes: ");
-
-  // 7 is the length of "Notes "
-  lcd.setCursor(7, 1);
-  lcd.print(notes);
 };
 
 void Game::displayTime(LiquidCrystal &lcd){
@@ -392,11 +362,11 @@ void Game::displayPlayerEntersName(LiquidCrystal &lcd){
 */
 void Game::reset(LedControl &lc){
   time = 0;
-  notes = 0;
-  lives = 3;
   lastTimeIncrement = millis();
-
+  
   isRunning = true;
+
+  doctor.reset();
   player.reset(lc);
   note.spawnNoteRandomly();
 };
