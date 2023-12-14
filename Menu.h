@@ -469,6 +469,10 @@ void Menu::enterNameHandler(Joystick &joystick, byte parentMenu){
       // set the username's completed size 
       usernameCompletedSize = menuInput.currentInputCursorPosition;
       
+      if (usernameCompletedSize > 0) {
+        game.player.hasUserName = true;
+      }
+
       // clear the lcd and go to the parent menu
       lcd.clear();
       currentMenu = parentMenu;
@@ -640,7 +644,7 @@ void Menu::updateHighscores(unsigned long newHighscore){
 
       playerNames[i] = "";
       for (int j = 0; j < 3; j++) {
-        strcat(playerNames[i], username[i]);
+        strcat(playerNames[i], username[j]);
       }
       break;
     }
@@ -664,7 +668,7 @@ void Menu::resetHighscores(){
     highscores[i] = 900;
 
     for (int letter = 0; letter < 3; letter++) {
-      playerNames[i][letter] = "";
+      playerNames[i][letter] = " ";
     }
   }
 

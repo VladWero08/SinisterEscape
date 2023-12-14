@@ -311,7 +311,8 @@ void Game::displayGameEnded(LedControl &lc,  LiquidCrystal &lcd){
   } 
 
   if ((millis() - gameEndingTime) < (gameEndingTimeInterval * 2 + transitionTime)
-      && player.hasHighscore) { 
+      && player.hasHighscore
+      && player.hasUserName) { 
       displayPlayerGotHighscore(lcd);
       return;
   } 
@@ -319,13 +320,14 @@ void Game::displayGameEnded(LedControl &lc,  LiquidCrystal &lcd){
   // in which the LCD will be cleared
   else if ((millis() - gameEndingTime) >= (gameEndingTimeInterval * 2 + transitionTime)
           && (millis() - gameEndingTime) <= 2 * (gameEndingTimeInterval + transitionTime)
-          && player.hasHighscore) {
+          && !player.hasHighscore) {
     lcd.clear();
     return;
   } 
 
   if ((millis() - gameEndingTime) < (gameEndingTimeInterval * 3 + transitionTime)
-      && player.hasHighscore) { 
+      && player.hasHighscore
+      && !player.hasUserName) { 
       displayPlayerEntersName(lcd);
       return;
   } 

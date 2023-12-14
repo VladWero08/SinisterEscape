@@ -25,6 +25,7 @@ struct Player{
   bool isWinning;
   // controls if the player had a highscore
   bool hasHighscore;
+  bool hasUserName;
   // last time when isDisplayed changed its state, in ms
   unsigned long lastDisplayBlinking;
 
@@ -44,6 +45,7 @@ struct Player{
     isDisplayed = true;
     // the player needs to earn the highscores, so its false at start
     hasHighscore = false;
+    hasUserName = false;
   };
 
   // functions to handle player's movement
