@@ -5,6 +5,8 @@
 #include <LiquidCrystal.h>
 #include <LedControl.h>
 
+#include "EEPROM.h"
+
 #include "CustomCharacters.h"
 #include "MenuDisplay.h"
 #include "JoyStick.h"
@@ -26,24 +28,29 @@ const byte timePosition = 6;
 const byte notesNeedForWin = 6;
 
 struct Game{
-  // time since the game started
-  unsigned int time;
-  // last time when the time was incremented
-  unsigned long lastTimeIncrement;
-
+  Player player;
+  Note note;
+  DrNocturne doctor;
+  
   byte notes;
   byte lives;
 
+  // time since the game started
+  unsigned long time;
+  // last time when the time was incremented
+  unsigned long lastTimeIncrement;
+
   bool isRunning = true;
+  bool isDisplayingEndMessage = false;
+
   unsigned long gameEndingTime = 0;
   unsigned long gameSpecialMomentsTime = 0;
   byte gameEndedMenuArrow = 0; 
 
-  Player player;
-  Note note;
-  DrNocturne doctor;
+  unsigned long *highscores;
+  byte highscoresSize;
 
-  Game(LedControl &lc): time(0), notes(0), lives(3), player(lc){
+  Game(LedControl &lc, unsigned long (&highScores)[3], byte highScoresSize): time(0), notes(0), lives(3), player(lc), highscores(highScores), highscoresSize(highScoresSize){
     lastTimeIncrement = millis();
   }
 
@@ -52,9 +59,10 @@ struct Game{
   void checkPlayerWasFoundByDoctor(LiquidCrystal &lcd);
   void checkPlayerWon(LedControl &lc, LiquidCrystal &lcd);
   void checkPlayerLost(LedControl &lc, LiquidCrystal &lcd);
+    bool checkPlayerGotHighscore();
 
   // functions to display the game on the LCD
-  int play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick);
+  void play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick);
 
   // functions to display game status while running
   void displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd);
@@ -65,12 +73,13 @@ struct Game{
   void increaseTime();
   
   // functions to handle end of the game
-  int displayGameEndedMenu(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick);
-  void displayGameEndedMessage(LiquidCrystal &lcd);
-  int gameEndedMenuHandler(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick);
-  
+  void displayGameEnded(LedControl &lc, LiquidCrystal &lcd);
+  void displayGameEndedMessage(LiquidCrystal &lcd);  
+  void displayPlayerGotHighscore(LiquidCrystal &lcd);
+  void displayPlayerEntersName(LiquidCrystal &lcd);
+
   // function to reset the game
-  void resetGame(LedControl &lc);
+  void reset(LedControl &lc);
 };
 
 void Game::checkPlayerFoundNote(LiquidCrystal &lcd){
@@ -137,30 +146,49 @@ void Game::checkPlayerWasFoundByDoctor(LiquidCrystal &lcd){
 void Game::checkPlayerWon(LedControl &lc, LiquidCrystal &lcd){
   // check if the number of notes reached the number
   // needed for the player to win
-  if (notes == notesNeedForWin) {
+  if (notes == 0) {
+    gameEndingTime = millis();
     // clear the matrix
     resetMatrix(lc);
     // clear the menu LCD
     lcd.clear();
-
-    gameEndingTime = millis();
+    
     isRunning = false;
+    isDisplayingEndMessage = true;
+
     player.isWinning = true;
+    // check if the player got an highscore
+    player.hasHighscore = checkPlayerGotHighscore();
   }
 }
 
 void Game::checkPlayerLost(LedControl &lc, LiquidCrystal &lcd){
   // if the player has no lives left, it means that he lost
   if (lives == 0) {
+    gameEndingTime = millis();
     // clear the matrix
     resetMatrix(lc);
     // clear the menu LCD
     lcd.clear();
 
-    gameEndingTime = millis();
     isRunning = false;
+    isDisplayingEndMessage = true;
   }
 }
+
+bool Game::checkPlayerGotHighscore(){
+  // loop the current highscores and check if the player
+  // surpassed other scores
+  for (int i = 0; i < highscoresSize; i++) {
+    // check if player surpassed ith score
+    if (time < highscores[i]) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 
 /*
   If the game is running, display the game status
@@ -170,7 +198,7 @@ void Game::checkPlayerLost(LedControl &lc, LiquidCrystal &lcd){
 
   Otherwise, display a game ending message.
 */
-int Game::play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){  
+void Game::play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){  
   if (isRunning) {
     // display the menu on the LCD constantly
     displayGameRunningMenu(lc, lcd);
@@ -215,9 +243,10 @@ int Game::play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){
     // increase time and display player constantly
     increaseTime();
     player.display(lc);
-    return -1;
-  } else {
-    return displayGameEndedMenu(lc, lcd, joystick);
+  } 
+    
+  if (isDisplayingEndMessage) {
+    displayGameEnded(lc, lcd);
   }
 };
 
@@ -297,33 +326,42 @@ void Game::increaseTime(){
   Finally, the user will be prompted a intermediate menu
   to choose from: to play again OR to return to the main menu.
 */
-int Game::displayGameEndedMenu(LedControl &lc,  LiquidCrystal &lcd, Joystick &joystick){
+void Game::displayGameEnded(LedControl &lc,  LiquidCrystal &lcd){
   // for 3 seconds the game endings message will be displayed
   if ((millis() - gameEndingTime) < gameEndingTimeInterval) {
     displayGameEndedMessage(lcd);
+    return;
   } 
   // after that, a smooth 500 ms transition will be made,
   // in which the LCD will be cleared
   else if ((millis() - gameEndingTime) >= gameEndingTimeInterval 
-  && (millis() - gameEndingTime) <= gameEndingTimeInterval + transitionTime) {
+          && (millis() - gameEndingTime) <= gameEndingTimeInterval + transitionTime) {
     lcd.clear();
+    return;
   } 
-  // an intermediate menu will be displayed, in case
-  // the user wants to play again
-  else {
-    lcd.setCursor(0, gameEndedMenuArrow);
-    lcd.write(arrowIndex);
 
-    lcd.setCursor(2, 0);
-    lcd.print("Play again");
+  if ((millis() - gameEndingTime) < (gameEndingTimeInterval * 2 + transitionTime)
+      && player.hasHighscore) { 
+      displayPlayerGotHighscore(lcd);
+      return;
+  } 
+  // after that, a smooth 500 ms transition will be made,
+  // in which the LCD will be cleared
+  else if ((millis() - gameEndingTime) >= (gameEndingTimeInterval * 2 + transitionTime)
+          && (millis() - gameEndingTime) <= 2 * (gameEndingTimeInterval + transitionTime)
+          && player.hasHighscore) {
+    lcd.clear();
+    return;
+  } 
 
-    lcd.setCursor(2, 1);
-    lcd.print("Back");
+  if ((millis() - gameEndingTime) < (gameEndingTimeInterval * 3 + transitionTime)
+      && player.hasHighscore) { 
+      displayPlayerEntersName(lcd);
+      return;
+  } 
 
-    return gameEndedMenuHandler(lc, lcd, joystick);
-  }
-
-  return -1;
+  lcd.clear();
+  isDisplayingEndMessage = false;
 }
 
 /*
@@ -339,57 +377,26 @@ void Game::displayGameEndedMessage(LiquidCrystal &lcd){
   displayTimeFromSeconds(lcd, time, 5, 1);
 }
 
-/*
-  Handle the intermediate menu: if the user
-  chooses to play again or to return to the main menu.
-*/
-int Game::gameEndedMenuHandler(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){
-  // handle up movement of the joystick
-  if (joystick.direction == joystickUp && gameEndedMenuArrow == 1) {
-    lcd.setCursor(0, gameEndedMenuArrow);
-    lcd.write(" ");
-    
-    gameEndedMenuArrow -= 1;
-  }
-
-  // handle down movement of the joystick
-  if (joystick.direction == joystickDown && gameEndedMenuArrow == 0) {
-    lcd.setCursor(0, gameEndedMenuArrow);
-    lcd.write(" ");
-
-    gameEndedMenuArrow += 1;
-  }
-
-  // handle the button press for the joystick
-  if (joystick.currentSwitchStateChanged == HIGH) {
-    // no matter where the user is pointing, clear the LCD
-    // and reset the game variables
-    lcd.clear();
-    resetGame(lc);
-
-    if (gameEndedMenuArrow == 0) {
-      // start the game again and enter the game menu
-      isRunning = true;
-      return 11;
-    } else {
-      // go back to the main menu
-      return 1;
-    }
-  }
-
-  return -1;
+void Game::displayPlayerGotHighscore(LiquidCrystal &lcd){
+  displayMessageInCenter(lcd, "New highscore!", 0);
+  displayTimeFromSeconds(lcd, time, 5, 1);
 }
 
+void Game::displayPlayerEntersName(LiquidCrystal &lcd){
+  displayMessageInCenter(lcd, "Who defeated", 0);
+  displayMessageInCenter(lcd, "Dr. Nocturne?", 1);
+}
 
 /*
   Reset all the game variables.
 */
-void Game::resetGame(LedControl &lc){
+void Game::reset(LedControl &lc){
   time = 0;
   notes = 0;
   lives = 3;
   lastTimeIncrement = millis();
 
+  isRunning = true;
   player.reset(lc);
   note.spawnNoteRandomly();
 };

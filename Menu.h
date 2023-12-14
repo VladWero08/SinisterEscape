@@ -26,6 +26,11 @@ const char* settingsMenu[settingsMenuSize] = {
   "Enter name", "LCD bright", "Matrix bright", "Sound", "Back"
 };
 
+const byte gameEndedMenuSize = 2;
+const char* gameEndedMenu[gameEndedMenuSize] = {
+  "Play again", "Back"
+};
+
 const byte aboutMenuSize = 10;
 const char* aboutMenu[10] = {
   // "SinisterEscape",
@@ -91,7 +96,7 @@ struct Menu{
   Game game;
   MenuInput menuInput;
 
-  Menu(byte RS, byte EN, byte D4, byte D5, byte D6, byte D7, byte dinPin, byte clockPin, byte loadPin, byte buzzerPin, byte lcdBrightnessPin): lcd(RS, EN, D4, D5, D6, D7), lc(dinPin, clockPin, loadPin, 1), game(this->lc){    
+  Menu(byte RS, byte EN, byte D4, byte D5, byte D6, byte D7, byte dinPin, byte clockPin, byte loadPin, byte buzzerPin, byte lcdBrightnessPin): lcd(RS, EN, D4, D5, D6, D7), lc(dinPin, clockPin, loadPin, 1), game(this->lc, highscores, maximumHighscores){    
     this->buzzerPin = buzzerPin;
     this->lcdBrightnessPin = lcdBrightnessPin;
 
@@ -129,10 +134,12 @@ struct Menu{
 
   // funtions related to the highscores menu
   void highscoresMenuHandler(Joystick &joystick);
+  void updateHighscores(unsigned long newHighscore);
+  void writeHighscores();
 
   // functions related to the settings menu
   void settingsMenuHandler(Joystick &joystick);
-  void enterNameHandler(Joystick &joystick);
+  void enterNameHandler(Joystick &joystick, byte parentMenu);
   void lcdBrightnessMenuHandler(Joystick &joystick);
   void matrixBrightnessMenuHandler(Joystick &joystick);
   void soundToggleHandler(Joystick &joystick);
@@ -153,10 +160,6 @@ void Menu::loadMenuSettings(){
   EEPROM.get(1, matrixBrightness);
   // load the sound setting
   EEPROM.get(2, sound);
-  // load the highscores
-  for (int i = 0; i < maximumHighscores; i++) {
-    EEPROM.get(3 + 4 * i, highscores[i]);
-  }
 };
 
 void Menu::loadPlayersHighschores(){
@@ -234,7 +237,7 @@ void Menu::menuSwitch(Joystick &joystick){
       break;
     case 30:
       // user needs to enter its name
-      enterNameHandler(joystick);
+      enterNameHandler(joystick, 3);
       break;
     case 31:
       // user needs to enter a number of LCD Brightness
@@ -316,7 +319,7 @@ void Menu::mainMenuHandler(Joystick &joystick){
     switch (arrowMenuPosition) {
       case 0:
         // start the game
-        game.resetGame(lc);
+        game.reset(lc);
         currentMenu = 11;
         break;
       case 1:
@@ -340,18 +343,40 @@ void Menu::mainMenuHandler(Joystick &joystick){
 };
 
 void Menu::gameMenuHandler(Joystick &joystick){
-  int gameMenuChoice = game.play(lc, lcd, joystick);
-
-  switch (gameMenuChoice) {
-    case 1:
-      currentMenu = 1;
-      break;
-    case 11:
-      currentMenu = 11;
-      break;
-    default:
-      break;
+  if (game.isRunning || game.isDisplayingEndMessage) {
+    game.play(lc, lcd, joystick);
+    return;
   }
+
+  // if (game.player.hasHighscore && usernameCompletedSize == 0) {
+  //   enterNameHandler(joystick, 11);
+  //   return;
+  // }
+
+  if (game.player.hasHighscore) {
+    updateHighscores(game.time);
+    writeHighscores();
+    return;
+  }
+
+  displayMenu(lcd, gameEndedMenu, currentMenuPosition, arrowMenuLinePosition);
+  menuWatcher(gameEndedMenuSize, joystick);
+  
+   if (joystick.currentSwitchStateChanged == HIGH) {
+      switch (arrowMenuPosition) {
+        case 0:
+          game.reset(lc);
+          currentMenu = 11;
+          break;
+        case 1:
+          currentMenu = 1;
+          break;
+        default:
+          break;
+      }  
+      // reset the menu
+      resetMenu();
+   }
 }
 
 
@@ -419,7 +444,7 @@ void Menu::settingsMenuHandler(Joystick &joystick){
   }
 };
 
-void Menu::enterNameHandler(Joystick &joystick){
+void Menu::enterNameHandler(Joystick &joystick, byte parentMenu){
   menuInput.userCursorLineHandler(lcd, joystick, letterAlphabet);
 
   if (joystick.currentSwitchStateChanged == HIGH && menuInput.currentCursorLinePosition == 0) {
@@ -439,13 +464,13 @@ void Menu::enterNameHandler(Joystick &joystick){
       
       // clear the lcd and go to the parent menu
       lcd.clear();
-      currentMenu = 3;
+      currentMenu = parentMenu;
       return;
     } else if (menuInput.currentCursorColumnPosition == exitPosition) {
       // if the user is pointing to the exit icon,
       // clear the lcd and go to the parent menu
       lcd.clear();
-      currentMenu = 3;
+      currentMenu = parentMenu;
       return;
     }
   }
@@ -596,7 +621,36 @@ void Menu::aboutMenuHandler(Joystick &joystick){
   }
 };
 
+void Menu::updateHighscores(unsigned long newHighscore){
+  for (int i = 0; i < maximumHighscores; i++) {
+    if (newHighscore < highscores[i]) {
+      for (int j = maximumHighscores - 1; j >= i + 1; j--) {
+        highscores[j] = highscores[j - 1]; 
+        playerNames[j] = strdup(playerNames[j - 1]);
+      }
 
+      highscores[i] = newHighscore;
+
+      playerNames[i] = username[0];
+      for (int j = 1; j < 3; j++) {
+        strcat(playerNames[i], username[i]);
+      }
+      break;
+    }
+  }
+
+  game.player.hasHighscore = false;
+}
+
+void Menu::writeHighscores(){
+  for (int i = 0; i < maximumHighscores; i++) {
+    EEPROM.put(highschoreStartAddr + i * 7, highscores[i]);
+
+    for (int letter = 0; letter < 3; letter++) {
+      EEPROM.put(playerNamesStartAddr + i * 7 + letter, playerNames[i][letter]);
+    }
+  }
+}
 
 void Menu::resetMenu(){
   // reset the arrow and the variables that are 

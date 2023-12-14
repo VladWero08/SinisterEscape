@@ -18,6 +18,8 @@ struct Player{
   bool isDisplayed;
   // controls the winning state of the player
   bool isWinning;
+  // controls if the player had a highscore
+  bool hasHighscore;
   // last time when isDisplayed changed its state, in ms
   unsigned long lastDisplayBlinking;
 
@@ -35,6 +37,8 @@ struct Player{
     isWinning = false;
     // the player is being displayed on the matrix
     isDisplayed = true;
+    // the player needs to earn the highscores, so its false at start
+    hasHighscore = false;
   };
 
   // functions to handle player's movement
@@ -201,6 +205,7 @@ void Player::reset(LedControl &lc){
   column = 1;
   isWinning = false;
   isDisplayed = true;
+  hasHighscore = false;
   currentRoom = random(0, roomsSize);
   setRoom(lc, currentRoom);
 }
