@@ -47,7 +47,7 @@ struct DrNocturne{
   // functions to spawn the note
   void spawnDoctorRandomly();
   void spawnDoctorSameRoom(const byte playerRoom);
-  void spawnInRoom();
+  void spawnInRoom(bool sameRoom);
 
   void isWaitingToChase(Player player);
   void chase(LedControl &lc, Player player);
@@ -64,7 +64,7 @@ struct DrNocturne{
 */
 void DrNocturne::spawnDoctorRandomly(){
   currentRoom = random(0, roomsSize);  
-  spawnInRoom();
+  spawnInRoom(false);
 };
 
 /*
@@ -72,16 +72,23 @@ void DrNocturne::spawnDoctorRandomly(){
 */
 void DrNocturne::spawnDoctorSameRoom(const byte playerRoom){
   currentRoom = playerRoom;
-  spawnInRoom();
+  spawnInRoom(true);
 };
 
 /*
   Generate a position in the currentRoom
   until it is a valid one. Spawn Dr. in that position.
 */
-void DrNocturne::spawnInRoom(){
+void DrNocturne::spawnInRoom(bool sameRoom){
   row = random(0, matrixSize);
   column = random(0, matrixSize);
+
+  // if DrNocturne is in the same room with the player,
+  // make sure not to generate him in the same spot with the player
+  if (sameRoom) {
+    row = random(0, matrixSize);
+    column = random(0, matrixSize);
+  }
 
   // generate row and column until
   // the position is different from a wall 

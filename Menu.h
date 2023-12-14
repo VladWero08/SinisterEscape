@@ -124,9 +124,11 @@ struct Menu{
   void displayWelcomeMessage();
   void welcomeMessageHandler(Joystick &joystick);
 
-  // functions related to the main menu
+  // functions related to the whole menu functionality
   void menuSwitch(Joystick &joystick);
   void menuWatcher(int maximumMenuSize, Joystick &joystick);
+
+  // functions to handle main menu
   void mainMenuHandler(Joystick &joystick);
 
   // functions related to game menu
@@ -142,6 +144,7 @@ struct Menu{
   void enterNameHandler(Joystick &joystick, byte parentMenu);
   void lcdBrightnessMenuHandler(Joystick &joystick);
   void matrixBrightnessMenuHandler(Joystick &joystick);
+  void resetHighscores();
   void soundToggleHandler(Joystick &joystick);
 
   // functions related to about menu
@@ -149,7 +152,6 @@ struct Menu{
 
   // reset functions 
   void resetMenu();
-  void resetHighscores();
   void resetUserInput(char* userInput[], byte userInputSize);
   byte setByteUserInput(byte number, char* userInput[]);
 };
@@ -349,10 +351,10 @@ void Menu::gameMenuHandler(Joystick &joystick){
     return;
   }
 
-  // if (game.player.hasHighscore && usernameCompletedSize == 0) {
-  //   enterNameHandler(joystick, 11);
-  //   return;
-  // }
+  if (game.player.hasHighscore && usernameCompletedSize == 0) {
+    enterNameHandler(joystick, 11);
+    return;
+  }
 
   if (game.player.hasHighscore) {
     updateHighscores(game.time);
@@ -636,8 +638,8 @@ void Menu::updateHighscores(unsigned long newHighscore){
 
       highscores[i] = newHighscore;
 
-      playerNames[i] = username[0];
-      for (int j = 1; j < 3; j++) {
+      playerNames[i] = "";
+      for (int j = 0; j < 3; j++) {
         strcat(playerNames[i], username[i]);
       }
       break;
@@ -657,15 +659,6 @@ void Menu::writeHighscores(){
   }
 }
 
-void Menu::resetMenu(){
-  // reset the arrow and the variables that are 
-  // holding the current state of the menu
-  lcd.clear();
-  arrowMenuPosition = 0;
-  arrowMenuLinePosition = 0;
-  currentMenuPosition = 0;
-};
-
 void Menu::resetHighscores(){
   for (int i = 0; i < maximumHighscores; i++) {
     highscores[i] = 900;
@@ -677,6 +670,16 @@ void Menu::resetHighscores(){
 
   writeHighscores();
 }
+
+
+void Menu::resetMenu(){
+  // reset the arrow and the variables that are 
+  // holding the current state of the menu
+  lcd.clear();
+  arrowMenuPosition = 0;
+  arrowMenuLinePosition = 0;
+  currentMenuPosition = 0;
+};
 
 void Menu::resetUserInput(char* userInput[], byte userInputSize){
   for (int i = 0; i < userInputSize; i++) {
