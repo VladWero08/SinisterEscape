@@ -15,9 +15,9 @@ const int drNocturneActiveBlinkingInterval = 500;
 const byte drNocturneInactiveBlinkingInterval = 100;
 
 // interval time between movements on level 1
-const int movementCooldownLevel1 = 1250;
+const int movementCooldown = 1250;
 // interval time between movements on level 2
-const int movementCooldownLevel2 = 1000;
+const int movementCooldownLastLevel = 1000;
 
 struct DrNocturne{
   byte row;
@@ -112,7 +112,7 @@ void DrNocturne::spawnInSameRoom(Player player){
 
   -> level 1: Dr. Nocturne is inactive
   -> level 2: <= 5
-  -> level 3: <= 3
+  -> level 3: <= 4
 
   When the player is close enough, Dr. Nocturne exits
   the waiting mode and enters in the chasing one.
@@ -140,7 +140,7 @@ void DrNocturne::isWaitingToChase(Player player){
 
   // level 3: start following the player when 
   // the distance is at most 3, which is harder than level 1
-  if (level == 3 && distance <= 4) {
+  if (level == 3 && distance <= 3) {
     // deactivate the waiting state
     isWaiting = false;
     // activate the chasing state
@@ -153,17 +153,15 @@ void DrNocturne::chase(LedControl &lc, Player player){
   // depending on the level, Dr. Nocturne has a cooldown
   // between consecutive movements
   switch (level) {
-    case 1:
-      if ((millis() - lastMovement) < movementCooldownLevel1) {
-        return;
-      }
-      break;
-    case 2:
-      if ((millis() - lastMovement) < movementCooldownLevel2) {
+    case 3:
+      if ((millis() - lastMovement) < movementCooldownLastLevel) {
         return;
       }
       break;
     default:
+      if ((millis() - lastMovement) < movementCooldown) {
+        return;
+      }
       break;
   }
 
