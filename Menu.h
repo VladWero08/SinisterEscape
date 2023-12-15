@@ -265,9 +265,7 @@ void Menu::menuSwitch(Joystick &joystick){
       break;
   }
 
-  if (sound) {
-    playMelody(buzzerPin, melodyNBC, durationsNBC);
-  }
+  playGameMelody(buzzerPin, sound, game);
 };
 
 void Menu::menuWatcher(int maximumMenuSize, Joystick &joystick){

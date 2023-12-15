@@ -20,7 +20,7 @@ const int transitionTime = 100;
 // duration of special messages during the game, on the display
 const int gameSpecialMomentsTimeInterval = 3000;
 // duration of message after the game has eneded
-const int gameEndingTimeInterval = 5000;
+const int gameEndingTimeInterval = 3500;
 // column position of the hearts in the live game menu
 const byte heartsStartPosition = 13;
 // column position of the time in the live game menu
@@ -36,6 +36,8 @@ struct Game{
   unsigned long time;
   // last time when the time was incremented
   unsigned long lastTimeIncrement;
+  // last time a note has been found
+  unsigned long lastNoteFound;
 
   bool isRunning = true;
   bool isDisplayingEndMessage = false;
@@ -56,7 +58,7 @@ struct Game{
   void checkPlayerWasFoundByDoctor(LiquidCrystal &lcd);
   void checkPlayerWon(LedControl &lc, LiquidCrystal &lcd);
   void checkPlayerLost(LedControl &lc, LiquidCrystal &lcd);
-    bool checkPlayerGotHighscore();
+  bool checkPlayerGotHighscore();
 
   // functions to display the game on the LCD
   void play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick);
@@ -88,6 +90,7 @@ void Game::checkPlayerFoundNote(LiquidCrystal &lcd){
   // if this section of the function was reached, it means
   // that the player has found the note
   player.notes += 1;
+  lastNoteFound = millis();
 
   // if the player already collected 3 notes,
   // make sure the note spawns in a different room 
@@ -118,7 +121,7 @@ void Game::checkPlayerFoundNote(LiquidCrystal &lcd){
   // for the last two notes, the doctor will spawn in the
   // same room with the player
   if (player.notes >= 4 && player.notes <= 5) {
-    doctor.spawnDoctorSameRoom(player.currentRoom);
+    doctor.spawnDoctorSameRoom(player);
     doctor.isWaiting = true;
   }
 }
@@ -140,7 +143,7 @@ void Game::checkPlayerWasFoundByDoctor(LiquidCrystal &lcd){
 void Game::checkPlayerWon(LedControl &lc, LiquidCrystal &lcd){
   // check if the number of notes reached the number
   // needed for the player to win
-  if (player.notes == 0) {
+  if (player.notes == notesNeedForWin) {
     gameEndingTime = millis();
     // clear the matrix
     resetMatrix(lc);
@@ -311,16 +314,14 @@ void Game::displayGameEnded(LedControl &lc,  LiquidCrystal &lcd){
   } 
 
   if ((millis() - gameEndingTime) < (gameEndingTimeInterval * 2 + transitionTime)
-      && player.hasHighscore
-      && player.hasUserName) { 
+      && player.hasHighscore) { 
       displayPlayerGotHighscore(lcd);
       return;
   } 
   // after that, a smooth 500 ms transition will be made,
   // in which the LCD will be cleared
   else if ((millis() - gameEndingTime) >= (gameEndingTimeInterval * 2 + transitionTime)
-          && (millis() - gameEndingTime) <= 2 * (gameEndingTimeInterval + transitionTime)
-          && !player.hasHighscore) {
+          && (millis() - gameEndingTime) <= 2 * (gameEndingTimeInterval + transitionTime)) {
     lcd.clear();
     return;
   } 

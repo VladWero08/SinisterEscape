@@ -15,9 +15,9 @@ const int drNocturneActiveBlinkingInterval = 500;
 const byte drNocturneInactiveBlinkingInterval = 100;
 
 // interval time between movements on level 1
-const int movementCooldownLevel1 = 1000;
+const int movementCooldownLevel1 = 1250;
 // interval time between movements on level 2
-const int movementCooldownLevel2 = 750;
+const int movementCooldownLevel2 = 1000;
 
 struct DrNocturne{
   byte row;
@@ -46,8 +46,9 @@ struct DrNocturne{
 
   // functions to spawn the note
   void spawnDoctorRandomly();
-  void spawnDoctorSameRoom(const byte playerRoom);
-  void spawnInRoom(bool sameRoom);
+  void spawnDoctorSameRoom(Player player);
+  void spawnInRoom();
+  void spawnInSameRoom(Player player);
 
   void isWaitingToChase(Player player);
   void chase(LedControl &lc, Player player);
@@ -64,31 +65,24 @@ struct DrNocturne{
 */
 void DrNocturne::spawnDoctorRandomly(){
   currentRoom = random(0, roomsSize);  
-  spawnInRoom(false);
+  spawnInRoom();
 };
 
 /*
   Spawn Dr. Nocturne in the same room as the player's room.
 */
-void DrNocturne::spawnDoctorSameRoom(const byte playerRoom){
-  currentRoom = playerRoom;
-  spawnInRoom(true);
+void DrNocturne::spawnDoctorSameRoom(Player player){
+  currentRoom = player.currentRoom;
+  spawnInSameRoom(player);
 };
 
 /*
   Generate a position in the currentRoom
   until it is a valid one. Spawn Dr. in that position.
 */
-void DrNocturne::spawnInRoom(bool sameRoom){
+void DrNocturne::spawnInRoom(){
   row = random(0, matrixSize);
   column = random(0, matrixSize);
-
-  // if DrNocturne is in the same room with the player,
-  // make sure not to generate him in the same spot with the player
-  if (sameRoom) {
-    row = random(0, matrixSize);
-    column = random(0, matrixSize);
-  }
 
   // generate row and column until
   // the position is different from a wall 
@@ -98,6 +92,18 @@ void DrNocturne::spawnInRoom(bool sameRoom){
   }
 };
 
+
+void DrNocturne::spawnInSameRoom(Player player){
+  row = random(0, matrixSize);
+  column = random(0, matrixSize);
+
+  // generate row and column until
+  // the position is different from a wall 
+  while (rooms[currentRoom][row][column] == true && player.row == row && player.column == column){
+    row = random(0, matrixSize);
+    column = random(0, matrixSize);
+  }
+}
 
 /*
   Dr. Nocturne waits for the player to come closer. 
@@ -134,7 +140,7 @@ void DrNocturne::isWaitingToChase(Player player){
 
   // level 3: start following the player when 
   // the distance is at most 3, which is harder than level 1
-  if (level == 3 && distance <= 3) {
+  if (level == 3 && distance <= 4) {
     // deactivate the waiting state
     isWaiting = false;
     // activate the chasing state
@@ -153,7 +159,7 @@ void DrNocturne::chase(LedControl &lc, Player player){
       }
       break;
     case 2:
-      if ((millis() - lastMovement) < movementCooldownLevel1) {
+      if ((millis() - lastMovement) < movementCooldownLevel2) {
         return;
       }
       break;
