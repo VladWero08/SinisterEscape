@@ -19,11 +19,11 @@ byte durationsNBC[] = {
   125, 125, 62, 62, 125, 125, 125, 125, 125,
 };
 
-int noteMelody[] = {
+int noteFoundMelody[] = {
   REST, NOTE_G4, NOTE_B4, NOTE_D5, NOTE_G4, NOTE_B4, NOTE_D5, REST
 };
 
-byte noteDurations[] = {
+byte noteFoundDurations[] = {
   100, 100, 100, 100, 100, 100, 100, 100
 };
 
@@ -76,7 +76,7 @@ void playGameMelody(const byte buzzerPin, bool soundIsOn, Game game){
 
   // prioritize player foundin a note by first checking if he found a note recently enough
   if ((millis() - game.lastNoteFound) <= 2000 && game.player.notes > 0) {
-    playMelody(buzzerPin, noteMelody, noteDurations, sizeof(noteMelody) / sizeof(noteMelody[0]), 1.00);
+    playMelody(buzzerPin, noteFoundMelody, noteFoundDurations, sizeof(noteFoundMelody) / sizeof(noteFoundMelody[0]), 1.00);
   }
   // otherwise, if the game is running and doctor has level 2, speed up
   // the game's melody

@@ -2,23 +2,33 @@
 #ifndef HIGHSCORES_H
 #define HIGHSCORES_H
 
+// addressed in EEPROM memory where
+// highscores information is stored
 const byte playerNamesStartAddr = 3;
 const byte highscoreStartAddr = 6;
 const byte highscoresRegisteredAddr = 24;
-const byte maximumHighscores = 3;
 
+// the maximum number of highscores that can be stored
+const byte maximumHighscores = 3;
+// the actual number of highscores that is stored in EPPROM
 byte highscoresRegistered;
+
 unsigned long highscores[maximumHighscores];
 char* playerNames[maximumHighscores];
 
+/*
+  Load the number of highscores, the highscores and
+  their associated player name from EEPROM.
+*/
 void loadPlayersHighschores(){
+  // read the number of highscores registered
   EEPROM.get(highscoresRegisteredAddr, highscoresRegistered);
 
   for (int score = 0; score < maximumHighscores; score++) {
     // read the ith score and the player's name who 
     // made that score
-
     char playerName[4];
+
     // player names are made of 3 characters
     for (int letter = 0; letter < 3; letter++) {
       EEPROM.get(playerNamesStartAddr + score * 7 + letter, playerName[letter]);
@@ -32,25 +42,45 @@ void loadPlayersHighschores(){
   }  
 };
 
-void updateHighscores(unsigned long newHighscore, char* username[]){
+/*
+  Given a new highscores and its associated player name, insert
+  the score into the list of highscores.
+
+  Update the rest of the highscores as well (if possible), by
+  copying them to a lower rank in the list.
+*/
+void updateHighscores(unsigned long newHighscore, char* playerName[]){
   for (int i = 0; i < highscoresRegistered; i++) {
+    // search for the position where the new highscores
+    // should ne inserted
     if (newHighscore < highscores[i]) {
+      // copy all the values from the position where the new score
+      // will be inserted into lower positions, to keep the top valid
       for (int j = highscoresRegistered - 1; j >= i + 1; j--) {
         highscores[j] = highscores[j - 1]; 
         playerNames[j] = strdup(playerNames[j - 1]);
       }
 
+      // insert the new highscore
       highscores[i] = newHighscore;
-
+      // also, insert the name associated with the score
       playerNames[i] = "";
       for (int j = 0; j < 3; j++) {
-        strcat(playerNames[i], username[j]);
+        strcat(playerNames[i], playerName[j]);
       }
       break;
     }
   }
 };
 
+/*
+  Write the number of highscores, the highscores and
+  their associated player name into EEPROM.
+
+  This function will be called whenever the highscores
+  will be updated, in order for the EEPROM memory to keep up
+  with the changes.
+*/
 void writeHighscores(){
   EEPROM.put(highscoresRegisteredAddr, highscoresRegistered);
 
@@ -63,6 +93,12 @@ void writeHighscores(){
   }
 };
 
+/*
+  Reset the highscores, seting the scores to a high
+  value (15:00 minutes, 900 seconds). 
+  
+  Also, the number of highscores registered will become 0. 
+*/
 void resetHighscores(){
   for (int i = 0; i < maximumHighscores; i++) {
     highscores[i] = 900;

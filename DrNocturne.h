@@ -7,12 +7,7 @@
 #include "Rooms.h"
 #include "Player.h"
 #include "Utils.h"
-
-// variables to make a blinking effect
-// for how many seconds is the Dr. visible
-const int drNocturneActiveBlinkingInterval = 500;
-// fot how many seconds is the Dr. invisible
-const byte drNocturneInactiveBlinkingInterval = 100;
+#include "ConstantsBlinking.h"
 
 // interval time between movements on level 1
 const int movementCooldown = 1250;
@@ -38,10 +33,7 @@ struct DrNocturne{
   unsigned long lastMovement;
 
   DrNocturne(){
-    isWaiting = false;
-    isChasing = false;
-    level = 1;
-    spawnDoctorRandomly();
+    reset();
   }
 
   // functions to spawn the note
@@ -244,13 +236,13 @@ void DrNocturne::display(LedControl &lc, Player player){
   // depending on the state of the note,
   // check if the state should be toggled 
   if (isDisplay) {
-    if ((millis() - noteActiveBlinkingInterval) > lastDisplayBlinking) {
+    if ((millis() - noteDoctorActiveBlinkingInterval) > lastDisplayBlinking) {
       lastDisplayBlinking = millis();
       isDisplay = !isDisplay;
       lc.setLed(0, row, column, isDisplay);
     }
   } else {
-    if ((millis() - noteInactiveBlinkingInterval) > lastDisplayBlinking) {
+    if ((millis() - noteDoctorInactiveBlinkingInterval) > lastDisplayBlinking) {
       lastDisplayBlinking = millis();
       isDisplay = !isDisplay;
       lc.setLed(0, row, column, isDisplay);

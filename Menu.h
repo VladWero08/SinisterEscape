@@ -19,7 +19,7 @@
 
 const byte mainMenuMessagesSize = 4;
 const char* mainMenuMessages[mainMenuMessagesSize] = {
-  "Start game", "Highscore", "Settings", "About",
+  "Start game", "Highscores", "Settings", "About",
 };
 
 const byte settingsMenuSize = 6;
@@ -78,6 +78,7 @@ struct Menu{
   bool sound;
 
   unsigned long highscoresResetTime;
+  unsigned long gameStartTime;
 
   byte lcdBrightness;
   byte matrixBrightness;
@@ -88,10 +89,12 @@ struct Menu{
   byte currentMenuPosition;
 
   Game game;
-  unsigned long gameStartTime;
   MenuInput menuInput;
 
-  Menu(byte RS, byte EN, byte D4, byte D5, byte D6, byte D7, byte dinPin, byte clockPin, byte loadPin, byte buzzerPin, byte lcdBrightnessPin): lcd(RS, EN, D4, D5, D6, D7), lc(dinPin, clockPin, loadPin, 1), game(this->lc){    
+  Menu(byte RS, byte EN, byte D4, byte D5, byte D6, byte D7, 
+       byte dinPin, byte clockPin, byte loadPin, 
+       byte buzzerPin, byte lcdBrightnessPin): 
+       lcd(RS, EN, D4, D5, D6, D7), lc(dinPin, clockPin, loadPin, 1), game(this->lc){    
     this->buzzerPin = buzzerPin;
     this->lcdBrightnessPin = lcdBrightnessPin;
 
@@ -106,7 +109,6 @@ struct Menu{
     lc.clearDisplay(0);
     
     loadMenuSettings();
-    loadPlayersHighschores();
     activateMenuSettins();
   }
 
@@ -148,6 +150,10 @@ struct Menu{
   byte setByteUserInput(byte number, char* userInput[]);
 };
 
+/*
+  Load brightness and sound settings, as well as the 
+  highscores with their associated names from EEPROM memory.
+*/
 void Menu::loadMenuSettings(){
   // load the LCD brightness setting
   EEPROM.get(0, lcdBrightness);
@@ -155,8 +161,14 @@ void Menu::loadMenuSettings(){
   EEPROM.get(1, matrixBrightness);
   // load the sound setting
   EEPROM.get(2, sound);
+
+  loadPlayersHighschores();
 };
 
+/*
+  Activate the brightness settings by writing
+  the values to the PINs that control the matrix and the LCD.
+*/
 void Menu::activateMenuSettins(){
   // activate the LCD brightness setting
   analogWrite(lcdBrightnessPin, lcdBrightness);
@@ -172,6 +184,10 @@ void Menu::displayWelcomeMessage(){
   displayMessageInCenterWithSkull(lcd, "RUN", 1);
 };
 
+/*
+  After the joystick is pressed, exit from
+  the welcoming message menu and enter the main menu.
+*/
 void Menu::welcomeMessageHandler(Joystick &joystick){
   if (joystick.currentSwitchStateChanged == HIGH) {
     currentMenu = 1;
@@ -180,7 +196,17 @@ void Menu::welcomeMessageHandler(Joystick &joystick){
 };
 
 
+/*
+  Acts as a central control point for managing different
+  menus, depending where the user is currently at.
 
+  Cases with 1 digit are usually "parents menu".
+  Cases with 2 digits are "children menus", where the
+  first digit represent the parent.
+
+  Analyze the menu structure to have a better understanding
+  of how the menus should communicate.
+*/
 void Menu::menuSwitch(Joystick &joystick){
   switch (currentMenu) {
     case 0:
@@ -246,9 +272,14 @@ void Menu::menuSwitch(Joystick &joystick){
   playGameMelody(buzzerPin, sound, game);
 };
 
+/*
+  For the menus with multiple options, 
+  this functions listens to joystick movements and
+  moves the arrow accordingly.
+*/
 void Menu::menuWatcher(int maximumMenuSize, Joystick &joystick){
   // joystick is pointing up
-  if (joystick.direction == 0) {
+  if (joystick.direction == joystickUp) {
     lcd.clear();
 
     // if the arrow is on line 0 of the LCD
@@ -269,7 +300,7 @@ void Menu::menuWatcher(int maximumMenuSize, Joystick &joystick){
     }
   } 
   // joystick is pointing down 
-  else if (joystick.direction == 1) {
+  else if (joystick.direction == joystickDown) {
     lcd.clear();
     
     // if the arrow is on line 0 of the LCD
@@ -288,6 +319,8 @@ void Menu::menuWatcher(int maximumMenuSize, Joystick &joystick){
     }
   }
 };
+
+
 
 void Menu::mainMenuHandler(Joystick &joystick){
   // handle the button press when the
@@ -323,28 +356,40 @@ void Menu::mainMenuHandler(Joystick &joystick){
   }
 };
 
+
 void Menu::gameMenuHandler(Joystick &joystick){
+  // if the user has set its name, display a "good luck" message
+  // before starting the game
   if ((millis() - gameStartTime) <= gameSpecialMomentsTimeInterval 
       && game.player.hasUserName) {
     displayGameStartedMessage(lcd, username, usernameCompletedSize);
     return;
   }
 
-  if ((millis() - gameStartTime) <= gameSpecialMomentsTimeInterval + transitionTime) {
+  // smooth transition between "good luck" message and actually
+  // starting the game
+  if ((millis() - gameStartTime) <= gameSpecialMomentsTimeInterval + transitionTime 
+       && game.player.hasUserName) {
     lcd.clear();
     return;
   }
 
+  // play the game; continue playing until the end messages
+  // where all displayed to the user
   if (game.isRunning || game.isDisplayingEndMessage) {
     game.play(lc, lcd, joystick);
     return;
   }
 
-  if (game.player.hasHighscore && usernameCompletedSize == 0) {
+  // if the player has a highscore but has not completed his name,
+  // prompt the enter name handler
+  if (game.player.hasHighscore && !game.player.hasUserName) {
     enterNameHandler(joystick, 11);
     return;
   }
 
+  // if the player has a highscore, update the highscore array,
+  // write it to EEPROM and stop displaying the "new highscore" message
   if (game.player.hasHighscore) {
     updateHighscores(game.time, username);
     writeHighscores();
@@ -358,10 +403,12 @@ void Menu::gameMenuHandler(Joystick &joystick){
    if (joystick.currentSwitchStateChanged == HIGH) {
       switch (arrowMenuPosition) {
         case 0:
+          // user chose to play again
           game.reset(lc);
           currentMenu = 11;
           break;
         case 1:
+          // user chose to go back to the main menu
           currentMenu = 1;
           break;
         default:
@@ -371,6 +418,7 @@ void Menu::gameMenuHandler(Joystick &joystick){
       resetMenu();
    }
 }
+
 
 
 void Menu::highscoresMenuHandler(Joystick &joystick){
@@ -391,6 +439,7 @@ void Menu::highscoresMenuHandler(Joystick &joystick){
     resetMenu();
   }
 };
+
 
 
 void Menu::settingsMenuHandler(Joystick &joystick){
@@ -577,6 +626,9 @@ void Menu::matrixBrightnessMenuHandler(Joystick &joystick){
 };
 
 void Menu::resetHighscoresHandler(){
+  // before returning to the parent menu, display
+  // a message in which the user is acknowledged that
+  // that the highscores were reset succesfully
   if ((millis() - highscoresResetTime) <= 2000) {
     displayMessageInCenter(lcd, "Highscores reset", 0);
     displayMessageInCenter(lcd, "successfully.", 1);
@@ -585,10 +637,14 @@ void Menu::resetHighscoresHandler(){
 
   lcd.clear();
   resetHighscores();
+  // return to the parent menu
   currentMenu = 3;
 }
 
 void Menu::soundToggleHandler(Joystick &joystick){
+  // listen to joystick movements to move from setting the
+  // sound to the exit sign on the right of the LCD
+
   if (joystick.direction == joystickRight && soundExitBlinking == false) {
     soundExitBlinking = true;
   } 
@@ -597,6 +653,7 @@ void Menu::soundToggleHandler(Joystick &joystick){
     soundExitBlinking = false;
   }
 
+  // listen to the joystick switch being pressed
   if (joystick.currentSwitchStateChanged == HIGH) {
     lcd.clear();
     

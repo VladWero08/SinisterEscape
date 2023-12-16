@@ -1,5 +1,5 @@
 #include "CustomCharacters.h"
-// #include "joystick.h"
+#include "Joystick.h"
 #include "Menu.h"
 #include "Game.h"
 
@@ -18,7 +18,7 @@ const byte joystickinY = A1;
 
 Joystick joystick(joystickinSW, joystickinX, joystickinY);
 
-// buzzer PIN
+// buzzer PIN to play music and sounds 
 const byte buzzerPin = 3;
 
 // PINs connected to the LCD

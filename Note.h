@@ -5,9 +5,7 @@
 #include <LedControl.h>
 #include "Player.h"
 #include "Rooms.h"
-
-const int noteActiveBlinkingInterval = 500;
-const byte noteInactiveBlinkingInterval = 100;
+#include "ConstantsBlinking.h"
 
 struct Note{
   byte row;
@@ -89,13 +87,13 @@ void Note::display(LedControl &lc, Player player){
   // depending on the state of the note,
   // check if the state should be toggled 
   if (isDisplayed) {
-    if ((millis() - noteActiveBlinkingInterval) > lastDisplayBlinking) {
+    if ((millis() - noteDoctorActiveBlinkingInterval) > lastDisplayBlinking) {
       lastDisplayBlinking = millis();
       isDisplayed = !isDisplayed;
       lc.setLed(0, row, column, isDisplayed);
     }
   } else {
-    if ((millis() - noteInactiveBlinkingInterval) > lastDisplayBlinking) {
+    if ((millis() - noteDoctorInactiveBlinkingInterval) > lastDisplayBlinking) {
       lastDisplayBlinking = millis();
       isDisplayed = !isDisplayed;
       lc.setLed(0, row, column, isDisplayed);

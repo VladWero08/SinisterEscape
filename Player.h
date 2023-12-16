@@ -29,23 +29,8 @@ struct Player{
   // last time when isDisplayed changed its state, in ms
   unsigned long lastDisplayBlinking;
 
-  Player(LedControl &lc): notes(0), lives(3){
-    // start from position 1, 1 in the room
-    row = 1;
-    column = 1;
-
-    // choose the room randomly and  
-    // display the room on the matrix
-    currentRoom = random(0, roomsSize);
-    setRoom(lc, currentRoom);
-
-    // the player starts from a losing state
-    isWinning = false;
-    // the player is being displayed on the matrix
-    isDisplayed = true;
-    // the player needs to earn the highscores, so its false at start
-    hasHighscore = false;
-    hasUserName = false;
+  Player(LedControl &lc){
+    reset(lc);
   };
 
   // functions to handle player's movement
@@ -226,18 +211,25 @@ void Player::displayLives(LiquidCrystal &lcd, byte heartsStartPosition){
 };
 
 void Player::reset(LedControl &lc){
-  row = 1;
-  column = 1;
+      // start from position 1, 1 in the room
+    row = 1;
+    column = 1;
+    
+    notes = 0;
+    lives = 3;
 
-  currentRoom = random(0, roomsSize);
-  setRoom(lc, currentRoom);
+    // choose the room randomly and  
+    // display the room on the matrix
+    currentRoom = random(0, roomsSize);
+    setRoom(lc, currentRoom);
 
-  notes = 0;
-  lives = 3;
-  
-  isWinning = false;
-  isDisplayed = true;
-  hasHighscore = false;
+    // the player starts from a losing state
+    isWinning = false;
+    // the player is being displayed on the matrix
+    isDisplayed = true;
+    // the player needs to earn the highscores, so its false at start
+    hasHighscore = false;
+    hasUserName = false;
 }
 
 #endif
