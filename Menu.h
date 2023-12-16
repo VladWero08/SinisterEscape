@@ -88,6 +88,7 @@ struct Menu{
   byte currentMenuPosition;
 
   Game game;
+  unsigned long gameStartTime;
   MenuInput menuInput;
 
   Menu(byte RS, byte EN, byte D4, byte D5, byte D6, byte D7, byte dinPin, byte clockPin, byte loadPin, byte buzzerPin, byte lcdBrightnessPin): lcd(RS, EN, D4, D5, D6, D7), lc(dinPin, clockPin, loadPin, 1), game(this->lc){    
@@ -298,6 +299,8 @@ void Menu::mainMenuHandler(Joystick &joystick){
       case 0:
         // start the game
         game.reset(lc);
+        gameStartTime = millis();
+
         currentMenu = 11;
         break;
       case 1:
@@ -321,6 +324,17 @@ void Menu::mainMenuHandler(Joystick &joystick){
 };
 
 void Menu::gameMenuHandler(Joystick &joystick){
+  if ((millis() - gameStartTime) <= gameSpecialMomentsTimeInterval 
+      && game.player.hasUserName) {
+    displayGameStartedMessage(lcd, username, usernameCompletedSize);
+    return;
+  }
+
+  if ((millis() - gameStartTime) <= gameSpecialMomentsTimeInterval + transitionTime) {
+    lcd.clear();
+    return;
+  }
+
   if (game.isRunning || game.isDisplayingEndMessage) {
     game.play(lc, lcd, joystick);
     return;

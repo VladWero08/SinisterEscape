@@ -214,4 +214,13 @@ void displayHighscores(LiquidCrystal &lcd, const char* playerNames[], const unsi
 };
 
 
+void displayGameStartedMessage(LiquidCrystal &lcd, char* username[], byte usernameSize) {
+  displayMessageInCenter(lcd, "Good luck,", 0);
+
+  for (int i = 0; i < usernameSize; i++) {
+    lcd.setCursor(7 + i, 1);
+    lcd.print(username[i]);
+  }
+}
+
 #endif 

@@ -17,7 +17,7 @@
 #include "Utils.h"
 
 // duration of transition between messages
-const int transitionTime = 100;
+const byte transitionTime = 100;
 // duration of special messages during the game, on the display
 const int gameSpecialMomentsTimeInterval = 3000;
 // duration of message after the game has eneded
@@ -141,7 +141,7 @@ void Game::checkPlayerWasFoundByDoctor(LiquidCrystal &lcd){
 void Game::checkPlayerWon(LedControl &lc, LiquidCrystal &lcd){
   // check if the number of notes reached the number
   // needed for the player to win
-  if (player.notes == 0) {
+  if (player.notes == 1) {
     gameEndingTime = millis();
     // clear the matrix
     resetMatrix(lc);
@@ -361,7 +361,7 @@ void Game::displayPlayerGotHighscore(LiquidCrystal &lcd){
 
 void Game::displayPlayerEntersName(LiquidCrystal &lcd){
   displayMessageInCenter(lcd, "Who defeated", 0);
-  displayMessageInCenter(lcd, "Dr. Nocturne?", 1);
+  displayMessageInCenter(lcd, "Dr.Nocturne?", 1);
 }
 
 /*
