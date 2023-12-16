@@ -10,6 +10,7 @@
 
 #include "Game.h"
 #include "JoyStick.h"
+#include "Highscores.h"
 #include "MenuInput.h"
 #include "MenuDisplay.h"
 #include "Melody.h"
@@ -23,7 +24,7 @@ const char* mainMenuMessages[mainMenuMessagesSize] = {
 
 const byte settingsMenuSize = 6;
 const char* settingsMenu[settingsMenuSize] = {
-  "Enter name", "LCD bright", "Matrix bright", "Sound", "Reset scores", "Back"
+  "Enter name", "LCD bright", "Matrix bright", "Reset scores", "Sound", "Back"
 };
 
 const byte gameEndedMenuSize = 2;
@@ -31,22 +32,19 @@ const char* gameEndedMenu[gameEndedMenuSize] = {
   "Play again", "Back"
 };
 
-const byte aboutMenuSize = 10;
-const char* aboutMenu[10] = {
-  // "SinisterEscape",
-  "Run through",
-  "linked rooms,",
-  "collecting 5",
-  "notes that",
-  "hold the",
-  "key to your",
-  "escape.",
+const byte aboutMenuSize = 4;
+const char* aboutMenu[4] = {
+  "SinisterEscape",
+  // "Run through",
+  // "linked rooms,",
+  // "collecting 6",
+  // "notes that",
+  // "hold the",
+  // "key to your",
+  // "escape.",
   // "Be wary of",
   // "Dr. Nocturne's",
   // "pursuit.",
-  // "He will",
-  // "follow and try",
-  // "to kill you.",
   // "",
   "Creator:",
   "VladWero08",
@@ -70,10 +68,6 @@ const char* numbersAlphabet[numbersAlphabetSize] = {
   "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
 };
 
-const byte playerNamesStartAddr = 3;
-const byte highschoreStartAddr = 6;
-const byte maximumHighscores = 3;
-
 struct Menu{
   LiquidCrystal lcd;
   LedControl lc;
@@ -81,13 +75,13 @@ struct Menu{
   byte buzzerPin;
 
   bool soundExitBlinking;
-
   bool sound;
+
+  unsigned long highscoresResetTime;
+
   byte lcdBrightness;
   byte matrixBrightness;
-  unsigned long highscores[maximumHighscores];
-  char* playerNames[maximumHighscores];
-
+  
   byte currentMenu;
   byte arrowMenuPosition;
   byte arrowMenuLinePosition;
@@ -96,7 +90,7 @@ struct Menu{
   Game game;
   MenuInput menuInput;
 
-  Menu(byte RS, byte EN, byte D4, byte D5, byte D6, byte D7, byte dinPin, byte clockPin, byte loadPin, byte buzzerPin, byte lcdBrightnessPin): lcd(RS, EN, D4, D5, D6, D7), lc(dinPin, clockPin, loadPin, 1), game(this->lc, highscores, maximumHighscores){    
+  Menu(byte RS, byte EN, byte D4, byte D5, byte D6, byte D7, byte dinPin, byte clockPin, byte loadPin, byte buzzerPin, byte lcdBrightnessPin): lcd(RS, EN, D4, D5, D6, D7), lc(dinPin, clockPin, loadPin, 1), game(this->lc){    
     this->buzzerPin = buzzerPin;
     this->lcdBrightnessPin = lcdBrightnessPin;
 
@@ -117,7 +111,6 @@ struct Menu{
 
   // functions to load and activate settings
   void loadMenuSettings();
-  void loadPlayersHighschores();
   void activateMenuSettins();
   
   // functions related to the welcome message  
@@ -136,15 +129,13 @@ struct Menu{
 
   // funtions related to the highscores menu
   void highscoresMenuHandler(Joystick &joystick);
-  void updateHighscores(unsigned long newHighscore);
-  void writeHighscores();
 
   // functions related to the settings menu
   void settingsMenuHandler(Joystick &joystick);
   void enterNameHandler(Joystick &joystick, byte parentMenu);
   void lcdBrightnessMenuHandler(Joystick &joystick);
   void matrixBrightnessMenuHandler(Joystick &joystick);
-  void resetHighscores();
+  void resetHighscoresHandler();
   void soundToggleHandler(Joystick &joystick);
 
   // functions related to about menu
@@ -163,25 +154,6 @@ void Menu::loadMenuSettings(){
   EEPROM.get(1, matrixBrightness);
   // load the sound setting
   EEPROM.get(2, sound);
-};
-
-void Menu::loadPlayersHighschores(){
-  for (int score = 0; score < maximumHighscores; score++) {
-    // read the ith score and the player's name who 
-    // made that score
-
-    char playerName[4];
-    // player names are made of 3 characters
-    for (int letter = 0; letter < 3; letter++) {
-      EEPROM.get(playerNamesStartAddr + score * 7 + letter, playerName[letter]);
-    }
-    // add the null character at the end
-    playerName[3] = '\0';
-    // copy the value into the array of player names
-    playerNames[score] = strdup(playerName);
-    
-    EEPROM.get(highschoreStartAddr + score * 7, highscores[score]);
-  }  
 };
 
 void Menu::activateMenuSettins(){
@@ -251,6 +223,11 @@ void Menu::menuSwitch(Joystick &joystick){
       matrixBrightnessMenuHandler(joystick);
       break;
     case 33:
+      // highscores will be reset and user will be prompted 
+      // a message upon success
+      resetHighscoresHandler();
+      break;
+    case 34:
       // user needs to toggle the sound
       soundToggleHandler(joystick);
       break;
@@ -355,8 +332,9 @@ void Menu::gameMenuHandler(Joystick &joystick){
   }
 
   if (game.player.hasHighscore) {
-    updateHighscores(game.time);
+    updateHighscores(game.time, username);
     writeHighscores();
+    game.player.hasHighscore = false;
     return;
   }
 
@@ -430,12 +408,14 @@ void Menu::settingsMenuHandler(Joystick &joystick){
         currentMenu = 32;
         break;
       case 3:
-        // set the sounde ON/OFF
+        // reset the highscores
+        lcd.clear();
+        highscoresResetTime = millis();
         currentMenu = 33;
         break;
       case 4:
-        resetHighscores();
-        currentMenu = 3;
+        // set the sounde ON/OFF
+        currentMenu = 34;
         break;
       case 5:
         // go back to the main menu
@@ -582,6 +562,18 @@ void Menu::matrixBrightnessMenuHandler(Joystick &joystick){
   }
 };
 
+void Menu::resetHighscoresHandler(){
+  if ((millis() - highscoresResetTime) <= 2000) {
+    displayMessageInCenter(lcd, "Highscores reset", 0);
+    displayMessageInCenter(lcd, "successfully.", 1);
+    return;
+  } 
+
+  lcd.clear();
+  resetHighscores();
+  currentMenu = 3;
+}
+
 void Menu::soundToggleHandler(Joystick &joystick){
   if (joystick.direction == joystickRight && soundExitBlinking == false) {
     soundExitBlinking = true;
@@ -629,50 +621,6 @@ void Menu::aboutMenuHandler(Joystick &joystick){
     }
   }
 };
-
-void Menu::updateHighscores(unsigned long newHighscore){
-  for (int i = 0; i < maximumHighscores; i++) {
-    if (newHighscore < highscores[i]) {
-      for (int j = maximumHighscores - 1; j >= i + 1; j--) {
-        highscores[j] = highscores[j - 1]; 
-        playerNames[j] = strdup(playerNames[j - 1]);
-      }
-
-      highscores[i] = newHighscore;
-
-      playerNames[i] = "";
-      for (int j = 0; j < 3; j++) {
-        strcat(playerNames[i], username[j]);
-      }
-      break;
-    }
-  }
-
-  game.player.hasHighscore = false;
-}
-
-void Menu::writeHighscores(){
-  for (int i = 0; i < maximumHighscores; i++) {
-    EEPROM.put(highschoreStartAddr + i * 7, highscores[i]);
-
-    for (int letter = 0; letter < 3; letter++) {
-      EEPROM.put(playerNamesStartAddr + i * 7 + letter, playerNames[i][letter]);
-    }
-  }
-}
-
-void Menu::resetHighscores(){
-  for (int i = 0; i < maximumHighscores; i++) {
-    highscores[i] = 900;
-
-    for (int letter = 0; letter < 3; letter++) {
-      playerNames[i][letter] = " ";
-    }
-  }
-
-  writeHighscores();
-}
-
 
 void Menu::resetMenu(){
   // reset the arrow and the variables that are 

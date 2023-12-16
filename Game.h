@@ -13,6 +13,7 @@
 #include "Player.h"
 #include "Note.h"
 #include "DrNocturne.h"
+#include "Highscores.h"
 #include "Utils.h"
 
 // duration of transition between messages
@@ -46,10 +47,7 @@ struct Game{
   unsigned long gameSpecialMomentsTime = 0;
   byte gameEndedMenuArrow = 0; 
 
-  unsigned long *highscores;
-  byte highscoresSize;
-
-  Game(LedControl &lc, unsigned long (&highScores)[3], byte highScoresSize): time(0), player(lc), highscores(highScores), highscoresSize(highScoresSize){
+  Game(LedControl &lc): time(0), player(lc){
     lastTimeIncrement = millis();
   }
 
@@ -143,7 +141,7 @@ void Game::checkPlayerWasFoundByDoctor(LiquidCrystal &lcd){
 void Game::checkPlayerWon(LedControl &lc, LiquidCrystal &lcd){
   // check if the number of notes reached the number
   // needed for the player to win
-  if (player.notes == notesNeedForWin) {
+  if (player.notes == 0) {
     gameEndingTime = millis();
     // clear the matrix
     resetMatrix(lc);
@@ -174,9 +172,15 @@ void Game::checkPlayerLost(LedControl &lc, LiquidCrystal &lcd){
 }
 
 bool Game::checkPlayerGotHighscore(){
+    // if highscores have not been completed
+  if (highscoresRegistered < 3) {
+    highscoresRegistered += 1;
+    return true;
+  }
+
   // loop the current highscores and check if the player
   // surpassed other scores
-  for (int i = 0; i < highscoresSize; i++) {
+  for (int i = 0; i < highscoresRegistered; i++) {
     // check if player surpassed ith score
     if (time < highscores[i]) {
       return true;

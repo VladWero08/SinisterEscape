@@ -170,6 +170,20 @@ void displayTimeFromSeconds(LiquidCrystal &lcd, const unsigned int time, const b
   }
 };
 
+void displayPlayerAndScore(LiquidCrystal &lcd, const char* playerName, const unsigned long score, const byte line){
+  if (score == 900) {
+    lcd.setCursor(4, line);
+    lcd.print("none");
+  } else {
+      // display the name of the player
+      lcd.setCursor(4, line);
+      lcd.print(playerName);
+      
+      // display the score of the player
+      displayTimeFromSeconds(lcd, score, 8, line);
+  }
+}
+
 /*
   Given an array of player names, their scores, and a index,
   display the ranking symbol, the name and the score of the players
@@ -180,33 +194,24 @@ void displayHighscores(LiquidCrystal &lcd, const char* playerNames[], const unsi
   lcd.write(arrowIndex);
 
   if (menuIndex < maxPlayers - 1) {
-      for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++) {
       // display the symbol for the podium
       lcd.setCursor(2, i);
       lcd.print(menuIndex + i + 1);
 
-      // display the name of the player
-      lcd.setCursor(4, i);
-      lcd.print(playerNames[menuIndex + i]);
-      
-      // display the score of the player
-      displayTimeFromSeconds(lcd, scores[menuIndex + i], 8, i);
+      displayPlayerAndScore(lcd, playerNames[menuIndex + i], scores[menuIndex + i], i);
     }
   } else {
       // display the symbol for the podium
       lcd.setCursor(2, 0);
       lcd.print(menuIndex + 1);
 
-      // display the name of the player
-      lcd.setCursor(4, 0);
-      lcd.print(playerNames[menuIndex]);
-      
-      // display the score of the player
-      displayTimeFromSeconds(lcd, scores[menuIndex], 8, 0);
+      displayPlayerAndScore(lcd, playerNames[menuIndex], scores[menuIndex], 0);
 
       lcd.setCursor(2, 1);
       lcd.print("Back");
   }
 };
+
 
 #endif 
