@@ -359,14 +359,6 @@ void Menu::mainMenuHandler(Joystick &joystick){
 void Menu::gameMenuHandler(Joystick &joystick){
   // if the user has set its name, display a "good luck" message
   // before starting the game
-  Serial.print("De cand a inceput jocul: ");
-  Serial.print(millis() - gameStartTime);
-  Serial.print("Jucatorul are un nume: ");
-  if (game.player.hasUserName) {
-    Serial.println("A");
-  } else {
-    Serial.println("F");
-  }
   if ((millis() - gameStartTime) <= gameSpecialMomentsTimeInterval 
       && game.player.hasUserName) {
     displayGameStartedMessage(lcd, username, usernameCompletedSize);
@@ -475,6 +467,10 @@ void Menu::settingsMenuHandler(Joystick &joystick){
         // set the matrix brightness
         menuInput.currentCursorColumnPosition = userInputStartPosition;
         menuInput.currentCursorLinePosition = 0;
+
+        // light up the whole matrix
+        setCompleteMatrix(lc);
+
         currentMenu = 32;
         break;
       case 3:
@@ -542,7 +538,15 @@ void Menu::enterNameHandler(Joystick &joystick, byte parentMenu){
 };
 
 void Menu::lcdBrightnessMenuHandler(Joystick &joystick){
+  byte oldBrightness = lcdBrightness;
   menuInput.userBrightnessInputHandler(lcd, joystick, lcdBrightness, 1, 255);
+
+  // if the brightness has been changed, write
+  // the new value to the LCD's pins so the user can
+  // see in real time the changes 
+  if (oldBrightness != lcdBrightness) {
+    analogWrite(lcdBrightnessPin, lcdBrightness);
+  }
 
   // if the user pressed the joystick
   if (joystick.currentSwitchStateChanged == HIGH) { 
@@ -561,7 +565,15 @@ void Menu::lcdBrightnessMenuHandler(Joystick &joystick){
 };
 
 void Menu::matrixBrightnessMenuHandler(Joystick &joystick){
+  byte oldBrightness = matrixBrightness;
   menuInput.userBrightnessInputHandler(lcd, joystick,  matrixBrightness, 1, 15);
+
+  // if the brightness has been changed, write
+  // the new value to the matrix so the user can
+  // see in real time the changes 
+  if (oldBrightness != matrixBrightness) {
+    lc.setIntensity(0, matrixBrightness);
+  }
 
   // if the user pressed the joystick
   if (joystick.currentSwitchStateChanged == HIGH) { 
@@ -573,6 +585,7 @@ void Menu::matrixBrightnessMenuHandler(Joystick &joystick){
 
       lcd.clear();
       menuInput.resetInputVariables();
+      resetMatrix(lc);
       currentMenu = 3;
       return;
     }

@@ -80,6 +80,18 @@ void setRoom(LedControl &lc, int room){
   }
 };
 
+
+/*
+  Light up the whole matrix.
+*/
+void setCompleteMatrix(LedControl &lc){
+  for (int row = 0; row < matrixSize; row++) {
+    for (int col = 0; col < matrixSize; col++) {
+      lc.setLed(0, row, col, true);
+    }
+  }
+};
+
 /*
   Reset the matrix values
 */
