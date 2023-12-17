@@ -39,6 +39,8 @@ struct Game{
   unsigned long lastTimeIncrement;
   // last time a note has been found
   unsigned long lastNoteFound;
+  // last time the player has died
+  unsigned long lastDeath;
 
   bool isRunning = true;
   bool isDisplayingEndMessage = false;
@@ -135,6 +137,7 @@ void Game::checkPlayerWasFoundByDoctor(LiquidCrystal &lcd){
     // make the doctor inactive
     doctor.isWaiting = false;
     doctor.isChasing = false;
+    lastDeath = millis();
   }
 }
 

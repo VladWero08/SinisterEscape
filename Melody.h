@@ -20,11 +20,19 @@ byte durationsNBC[] = {
 };
 
 int noteFoundMelody[] = {
-  REST, NOTE_G4, NOTE_B4, NOTE_D5, NOTE_G4, NOTE_B4, NOTE_D5, REST
+  REST, NOTE_G5, NOTE_B5, NOTE_D6, NOTE_G5, NOTE_B5, NOTE_D6, REST
 };
 
 byte noteFoundDurations[] = {
   100, 100, 100, 100, 100, 100, 100, 100
+};
+
+int playerDeathMelody[] = {
+  REST, NOTE_A2, NOTE_G2, NOTE_E2, NOTE_D2, NOTE_C2, REST
+};
+
+byte playerDeathDurations[] = {
+  100, 100, 100, 100, 100, 100, 100
 };
 
 unsigned long previousNoteTime = 0;
@@ -77,6 +85,11 @@ void playGameMelody(const byte buzzerPin, bool soundIsOn, Game game){
   // prioritize player foundin a note by first checking if he found a note recently enough
   if ((millis() - game.lastNoteFound) <= 2000 && game.player.notes > 0) {
     playMelody(buzzerPin, noteFoundMelody, noteFoundDurations, sizeof(noteFoundMelody) / sizeof(noteFoundMelody[0]), 1.00);
+  }
+  // also prioritize player being found by Dr. Nocturne
+  else if ((millis() - game.lastDeath) <= 2000 && game.player.lives < 3) { 
+    Serial.println("mama");
+    playMelody(buzzerPin, playerDeathMelody, playerDeathDurations, sizeof(playerDeathMelody) / sizeof(playerDeathMelody[0]), 1.00);
   }
   // otherwise, if the game is running and doctor has level 2, speed up
   // the game's melody

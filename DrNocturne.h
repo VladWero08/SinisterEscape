@@ -10,9 +10,9 @@
 #include "ConstantsBlinking.h"
 
 // interval time between movements on level 1
-const int movementCooldown = 1250;
+const int movementCooldown = 1000;
 // interval time between movements on level 2
-const int movementCooldownLastLevel = 1000;
+const int movementCooldownLastLevel = 850;
 
 struct DrNocturne{
   byte row;
