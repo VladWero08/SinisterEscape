@@ -43,7 +43,7 @@ struct Player{
   // function to display the player in the room
   void display(LedControl &lc);
   void displayNotes(LiquidCrystal &lcd);
-  void displayLives(LiquidCrystal &lcd, byte heartsStartPosition);
+  void displayLives(LiquidCrystal &lcd, byte heartsStartPosition, const int line);
 
   // function to initate the players position;
   void reset(LedControl &lc);
@@ -196,16 +196,16 @@ void Player::display(LedControl &lc){
 
 void Player::displayNotes(LiquidCrystal &lcd){
   lcd.setCursor(0, 1);
-  lcd.print("Notes: ");
+  lcd.print("Notes:");
 
   // 7 is the length of "Notes "
   lcd.setCursor(7, 1);
   lcd.print(notes);
 };
 
-void Player::displayLives(LiquidCrystal &lcd, byte heartsStartPosition){
+void Player::displayLives(LiquidCrystal &lcd, byte heartsStartPosition, const int line){
   for(int i = 0; i < lives; i++) {
-    lcd.setCursor(heartsStartPosition + i, 0);
+    lcd.setCursor(heartsStartPosition + i, line);
     lcd.write(skullIndex);
   }
 };

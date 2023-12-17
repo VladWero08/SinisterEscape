@@ -42,6 +42,7 @@ struct Game{
   // last time the player has died
   unsigned long lastDeath;
 
+  bool isInPause = false;
   bool isRunning = true;
   bool isDisplayingEndMessage = false;
 
@@ -65,9 +66,13 @@ struct Game{
 
   // functions to display game status while running
   void displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd);
-  void displayTime(LiquidCrystal &lcd);
+  void displayTime(LiquidCrystal &lcd, const int line);
   void increaseTime();
   
+  // function to handle pause mode
+  void gamePauseHandler(LiquidCrystal &lcd, Joystick &joystick);
+  void displayPauseMode(LiquidCrystal &lcd);
+
   // functions to handle end of the game
   void displayGameEnded(LedControl &lc, LiquidCrystal &lcd);
   void displayGameEndedMessage(LiquidCrystal &lcd);  
@@ -203,6 +208,15 @@ bool Game::checkPlayerGotHighscore(){
   Otherwise, display a game ending message.
 */
 void Game::play(LedControl &lc, LiquidCrystal &lcd, Joystick &joystick){  
+  // before playing the game, check if the user pressed
+  // the SW in the joystick aka made a pause
+  gamePauseHandler(lcd, joystick);
+
+  if (isInPause) {
+    displayPauseMode(lcd);
+    return;
+  }
+
   if (isRunning) {
     // display the menu on the LCD constantly
     displayGameRunningMenu(lc, lcd);
@@ -277,14 +291,14 @@ void Game::displayGameRunningMenu(LedControl &lc, LiquidCrystal &lcd){
   }
 
   // display the usual game menu
-  player.displayLives(lcd, heartsStartPosition);
+  player.displayLives(lcd, heartsStartPosition, 0);
   player.displayNotes(lcd);
   doctor.displayLevel(lcd);
-  displayTime(lcd);
+  displayTime(lcd, 0);
 };
 
-void Game::displayTime(LiquidCrystal &lcd){
-  displayTimeFromSeconds(lcd, time, timePosition, 0);
+void Game::displayTime(LiquidCrystal &lcd, const int line){
+  displayTimeFromSeconds(lcd, time, timePosition, line);
 };
 
 void Game::increaseTime(){
@@ -294,6 +308,28 @@ void Game::increaseTime(){
     lastTimeIncrement = millis();
     time += 1;
   }
+}
+
+
+void Game::gamePauseHandler(LiquidCrystal &lcd, Joystick &joystick){
+  // if the SW button was pressed, toggle the pause variable
+  if (joystick.currentSwitchStateChanged == HIGH) {
+    lcd.clear();
+    // reset the last time when the time was incremented because it does
+    // not need to take into account the MS during the pause mode
+    lastTimeIncrement = millis();
+
+    // toggle the pause variable
+    isInPause = !isInPause;
+  } 
+}
+
+void Game::displayPauseMode(LiquidCrystal &lcd){
+  displayMessageInCenter(lcd, " PAUSE", 1);
+  displayTime(lcd, 0);
+
+  player.displayLives(lcd, heartsStartPosition, 0);
+  doctor.displayLevel(lcd);
 }
 
 
