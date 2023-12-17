@@ -39,16 +39,16 @@ struct MenuInput{
   void userInputHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char* userInput[], const char* userAlphabet[]);
   void userAlphabetHandler(LiquidCrystal &lcd, Joystick &joystick, const char* userAlphabet[], const int leftBoundary, const int rightBoundary);
   void userInputControlsHandler(LiquidCrystal &lcd, Joystick &joystick);
+  void userCursorLineHandler(LiquidCrystal &lcd, Joystick &joystick, const char* userAlphabet[]);
+  int joystickPressControlsHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char* userInput[]);
+  // function to display user input
+  void displayUserInput(LiquidCrystal &lcd, const char* userInput[]);
 
   // functions to handle brightness input
   void userBrightnessInputHandler(LiquidCrystal &lcd, Joystick &joystick, byte &brightness, const byte minBrightness, const byte maxBrightness);
+  void userBrightnessMovementHandler(Joystick &joystick);
   void userBrightnessDisplay(LiquidCrystal &lcd, byte brightness, const byte minBrightness, const byte maxBrightness);
 
-  int joystickPressControlsHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char* userInput[]);
-  void userCursorLineHandler(LiquidCrystal &lcd, Joystick &joystick, const char* userAlphabet[]);
-
-  // function to display user input
-  void displayUserInput(LiquidCrystal &lcd, const char* userInput[]);
  
   // function to reset input variables
   void resetInputVariables();
@@ -204,134 +204,6 @@ void MenuInput::userInputControlsHandler(LiquidCrystal &lcd, Joystick &joystick)
   }
 };
 
-
-void MenuInput::userBrightnessInputHandler(LiquidCrystal &lcd, Joystick &joystick, byte &brightness, const byte minBrightness, const byte maxBrightness){
-  if (joystick.direction == joystickLeft && currentCursorColumnPosition > userInputStartPosition) {  
-    if (currentCursorColumnPosition == exitPosition) {
-      currentCursorColumnPosition = userInputStartPosition + 2;
-    } else {
-      currentCursorColumnPosition -= 1;
-    }
-  }
-
-  if (joystick.direction == joystickRight && currentCursorColumnPosition < exitPosition) {
-    if (currentCursorColumnPosition == userInputStartPosition + 2) {
-      currentCursorColumnPosition = exitPosition;
-    } else {
-      currentCursorColumnPosition += 1;
-    }
-  }
-
-  if (currentCursorColumnPosition >= userInputStartPosition && currentCursorColumnPosition < userInputStartPosition + 3) {
-    int increment = 0;
-    
-    if (joystick.direction == joystickUp) {
-      increment += 1;
-    } 
-
-    if (joystick.direction == joystickDown) {
-      increment -= 1;
-    }
-
-    switch (currentCursorColumnPosition) {
-      case userInputStartPosition:
-        if (brightness + increment * 100 >= minBrightness && brightness + increment * 100 <= maxBrightness)
-          brightness = brightness + increment * 100;
-        break;
-      case userInputStartPosition + 1:
-        if (brightness + increment * 10 >= minBrightness && brightness + increment * 10 <= maxBrightness)
-          brightness = brightness + increment * 10;
-        break;
-      case userInputStartPosition + 2:
-        if (brightness + increment >= minBrightness && brightness + increment <= maxBrightness)
-          brightness = brightness + increment;
-        break;
-      default:
-        break;
-    }
-  }
-
-  userBrightnessDisplay(lcd, brightness, minBrightness, maxBrightness);
-}
-
-void MenuInput::userBrightnessDisplay(LiquidCrystal &lcd, byte brightness, const byte minBrightness, const byte maxBrightness){
-  lcd.setCursor(0, 0);
-  lcd.write(arrowIndex);
-
-  if (currentCursorColumnPosition != userInputStartPosition) {
-    lcd.setCursor(userInputStartPosition, 0);
-    lcd.print((brightness / 100) % 10);
-  } else {
-    displayBlinkingByte(lcd, (brightness / 100) % 10, 0, userInputStartPosition);
-  }
-
-  if (currentCursorColumnPosition != userInputStartPosition + 1) {
-    lcd.setCursor(userInputStartPosition + 1, 0);
-    lcd.print((brightness / 10) % 10);
-  } else {
-    displayBlinkingByte(lcd, (brightness / 10) % 10, 0, userInputStartPosition + 1);
-  }
-
-  if (currentCursorColumnPosition != userInputStartPosition + 2) {
-    lcd.setCursor(userInputStartPosition + 2, 0);
-    lcd.print(brightness % 10);
-  } else {
-    displayBlinkingByte(lcd, brightness % 10, 0, userInputStartPosition + 2);
-  }
-
-  if (currentCursorColumnPosition != exitPosition) {
-    lcd.setCursor(exitPosition, currentCursorLinePosition);
-    lcd.write(exitIndex);
-  } else {
-    displayBlinkingInt(lcd, exitIndex, currentCursorLinePosition, exitPosition);
-  }
-
-  lcd.setCursor(0, 1);
-  lcd.print("MIN:");
-
-  lcd.setCursor(4, 1);
-  lcd.print(minBrightness);
-
-  lcd.setCursor(9, 1);
-  lcd.print("MAX:");
-
-  lcd.setCursor(13, 1);
-  lcd.print(maxBrightness);
-}
-
-/*
-  Listens to joystick presses when the cursor
-  is on the 1st line (control line).
-*/
-int MenuInput::joystickPressControlsHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char* userInput[]){
-  // if the joystick has not been pressed, exit
-  if (joystick.currentSwitchStateChanged != HIGH) {
-    return -1;
-  }
-
-  // if the cursor is not pointing to the first line, exit
-  if (currentCursorLinePosition != 0) {
-    return -1;
-  }
-  
-  lcd.clear();
-  
-  if (currentCursorColumnPosition == deletePosition) {
-    currentInputCursorPosition = 0;
-    // empty the userInput values
-    for (int i = 0; i < maxInput; i++) {
-      userInput[i] = "";
-    }
-  } else if (currentCursorColumnPosition == verifyPosition) {
-    // TO DO: save the name in memory and EEPROM
-    return 1;
-  } else if (currentCursorColumnPosition == exitPosition) {
-    return 1;
-  }
-
-  return -1;
-}
-
 /*
   Listens to the joystick movements on the Y axis.
 
@@ -378,6 +250,177 @@ void MenuInput::userCursorLineHandler(LiquidCrystal &lcd, Joystick &joystick, co
     currentCursorLinePosition += 1;
   }
 };
+
+/*
+  Controls the brightness settings menu. 
+  Listents to all movements of the joystick.
+
+  If the user is poiting towards a digit and moves
+  the joystick UP or DOWN, try to increment or decrement
+  the brightness value, only if the new value will still be inside
+  the interval [minBrightness, maxBrightness].
+*/
+void MenuInput::userBrightnessInputHandler(LiquidCrystal &lcd, Joystick &joystick, byte &brightness, const byte minBrightness, const byte maxBrightness){
+  userBrightnessMovementHandler(joystick);
+
+  // if the user is pointing to one of the digit, check
+  // if the joystick was moved UP or DOWN
+  if (currentCursorColumnPosition >= userInputStartPosition && currentCursorColumnPosition < userInputStartPosition + 3) {
+    // factor of incrementation
+    int increment = 0;
+    
+    if (joystick.direction == joystickUp) {
+      increment += 1;
+    } 
+
+    if (joystick.direction == joystickDown) {
+      increment -= 1;
+    }
+
+    // depending to which digit the user is pointing at,
+    // the factor of incrementation will be multiplied with the
+    // associate value: 100 (hundreth), 10 (decimal) or 1 
+    switch (currentCursorColumnPosition) {
+      // when pointing to the hundreth digit
+      case userInputStartPosition:
+        if (brightness + increment * 100 >= minBrightness && brightness + increment * 100 <= maxBrightness)
+          brightness = brightness + increment * 100;
+        break;
+      // when pointing to the decimal digit
+      case userInputStartPosition + 1:
+        if (brightness + increment * 10 >= minBrightness && brightness + increment * 10 <= maxBrightness)
+          brightness = brightness + increment * 10;
+        break;
+      // when pointing to the last digit
+      case userInputStartPosition + 2:
+        if (brightness + increment >= minBrightness && brightness + increment <= maxBrightness)
+          brightness = brightness + increment;
+        break;
+      default:
+        break;
+    }
+  }
+
+  userBrightnessDisplay(lcd, brightness, minBrightness, maxBrightness);
+}
+
+/*
+  Listents to the LEFT <-> RIGHT movement of the joystick,
+  when the user is in the brightness setting mode.
+*/
+void MenuInput::userBrightnessMovementHandler(Joystick &joystick){
+  if (joystick.direction == joystickLeft && currentCursorColumnPosition > userInputStartPosition) {  
+    // if the user is currently poiting to the exit icon and 
+    // moves the joystick to the left, jump directly to 
+    // the last digit of the brightness
+    if (currentCursorColumnPosition == exitPosition) {
+      currentCursorColumnPosition = userInputStartPosition + 2;
+    } else {
+      currentCursorColumnPosition -= 1;
+    }
+  }
+
+  if (joystick.direction == joystickRight && currentCursorColumnPosition < exitPosition) {
+    // if the user is currently poiting to the last digit of the brightness number
+    // and  moves the joystick to the right, jump directly to the exit icon
+    if (currentCursorColumnPosition == userInputStartPosition + 2) {
+      currentCursorColumnPosition = exitPosition;
+    } else {
+      currentCursorColumnPosition += 1;
+    }
+  }
+}
+
+/*
+  Displays the brightness menu, which contains:
+  -> current brightness value
+  -> exit icon 
+  -> MIN & MAX values allowed for the brightness which is 
+  being set
+
+  When the user is pointing towards a digit / the exit icon,
+  they will be blinking.
+*/
+void MenuInput::userBrightnessDisplay(LiquidCrystal &lcd, byte brightness, const byte minBrightness, const byte maxBrightness){
+  // display the arrow 
+  lcd.setCursor(0, 0);
+  lcd.write(arrowIndex);
+
+  if (currentCursorColumnPosition != userInputStartPosition) {
+    lcd.setCursor(userInputStartPosition, 0);
+    lcd.print((brightness / 100) % 10);
+  } else {
+    displayBlinkingByte(lcd, (brightness / 100) % 10, 0, userInputStartPosition);
+  }
+
+  if (currentCursorColumnPosition != userInputStartPosition + 1) {
+    lcd.setCursor(userInputStartPosition + 1, 0);
+    lcd.print((brightness / 10) % 10);
+  } else {
+    displayBlinkingByte(lcd, (brightness / 10) % 10, 0, userInputStartPosition + 1);
+  }
+
+  if (currentCursorColumnPosition != userInputStartPosition + 2) {
+    lcd.setCursor(userInputStartPosition + 2, 0);
+    lcd.print(brightness % 10);
+  } else {
+    displayBlinkingByte(lcd, brightness % 10, 0, userInputStartPosition + 2);
+  }
+
+  if (currentCursorColumnPosition != exitPosition) {
+    lcd.setCursor(exitPosition, currentCursorLinePosition);
+    lcd.write(exitIndex);
+  } else {
+    displayBlinkingInt(lcd, exitIndex, currentCursorLinePosition, exitPosition);
+  }
+
+  // display the minimum value allowed
+  lcd.setCursor(0, 1);
+  lcd.print("MIN:");
+
+  lcd.setCursor(4, 1);
+  lcd.print(minBrightness);
+
+  // display the maximum value allowed
+  lcd.setCursor(9, 1);
+  lcd.print("MAX:");
+
+  lcd.setCursor(13, 1);
+  lcd.print(maxBrightness);
+}
+
+/*
+  Listens to joystick presses when the cursor
+  is on the 1st line (control line).
+*/
+int MenuInput::joystickPressControlsHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char* userInput[]){
+  // if the joystick has not been pressed, exit
+  if (joystick.currentSwitchStateChanged != HIGH) {
+    return -1;
+  }
+
+  // if the cursor is not pointing to the first line, exit
+  if (currentCursorLinePosition != 0) {
+    return -1;
+  }
+  
+  lcd.clear();
+  
+  if (currentCursorColumnPosition == deletePosition) {
+    currentInputCursorPosition = 0;
+    // empty the userInput values
+    for (int i = 0; i < maxInput; i++) {
+      userInput[i] = "";
+    }
+  } else if (currentCursorColumnPosition == verifyPosition) {
+    // TO DO: save the name in memory and EEPROM
+    return 1;
+  } else if (currentCursorColumnPosition == exitPosition) {
+    return 1;
+  }
+
+  return -1;
+}
 
 /*
   Reset the variables to be reusable for new

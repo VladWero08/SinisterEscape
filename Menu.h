@@ -147,7 +147,6 @@ struct Menu{
   // reset functions 
   void resetMenu();
   void resetUserInput(char* userInput[], byte userInputSize);
-  byte setByteUserInput(byte number, char* userInput[]);
 };
 
 /*
@@ -457,7 +456,7 @@ void Menu::settingsMenuHandler(Joystick &joystick){
         currentMenu = 30;
         break;
       case 1:
-        // set the LCD brightness
+        // set the LCD brightnesssetByteUserInput
         menuInput.currentCursorColumnPosition = userInputStartPosition;
         menuInput.currentCursorLinePosition = 0;
         currentMenu = 31;
@@ -655,15 +654,6 @@ void Menu::resetUserInput(char* userInput[], byte userInputSize){
     lcd.setCursor(userInputStartPosition + i, 0);
     lcd.print(userInput[i]);
   }
-};
-
-byte Menu::setByteUserInput(byte number, char* userInput[]){
-  String numberString = String(number);
-  for (int i = 0; i < numberString.length(); i++) {
-    userInput[i] = strdup(numberString.substring(i, i + 1).c_str());
-  }
-
-  return (byte) numberString.length();
 };
 
 #endif
