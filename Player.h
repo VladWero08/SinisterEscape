@@ -229,7 +229,6 @@ void Player::reset(LedControl &lc){
     isDisplayed = true;
     // the player needs to earn the highscores, so its false at start
     hasHighscore = false;
-    hasUserName = false;
 }
 
 #endif

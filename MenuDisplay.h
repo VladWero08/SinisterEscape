@@ -233,7 +233,7 @@ void displayGameStartedMessage(LiquidCrystal &lcd, char* username[], byte userna
   displayMessageInCenter(lcd, "Good luck,", 0);
 
   for (int i = 0; i < usernameSize; i++) {
-    lcd.setCursor(7 + i, 1);
+    lcd.setCursor(6 + i, 1);
     lcd.print(username[i]);
   }
 }

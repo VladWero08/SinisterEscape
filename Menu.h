@@ -359,6 +359,14 @@ void Menu::mainMenuHandler(Joystick &joystick){
 void Menu::gameMenuHandler(Joystick &joystick){
   // if the user has set its name, display a "good luck" message
   // before starting the game
+  Serial.print("De cand a inceput jocul: ");
+  Serial.print(millis() - gameStartTime);
+  Serial.print("Jucatorul are un nume: ");
+  if (game.player.hasUserName) {
+    Serial.println("A");
+  } else {
+    Serial.println("F");
+  }
   if ((millis() - gameStartTime) <= gameSpecialMomentsTimeInterval 
       && game.player.hasUserName) {
     displayGameStartedMessage(lcd, username, usernameCompletedSize);
@@ -392,7 +400,9 @@ void Menu::gameMenuHandler(Joystick &joystick){
   if (game.player.hasHighscore) {
     updateHighscores(game.time, username);
     writeHighscores();
+
     game.player.hasHighscore = false;
+    lcd.clear();
     return;
   }
 
@@ -495,7 +505,6 @@ void Menu::enterNameHandler(Joystick &joystick, byte parentMenu){
   if (joystick.currentSwitchStateChanged == HIGH && menuInput.currentCursorLinePosition == 0) {
     // if the user pressed the joystick and is pointing
     // somewhere on the first lin
-    
     if (menuInput.currentCursorColumnPosition == deletePosition) {
       // if the user is pointing to the delete icon, 
       // delete the user input
@@ -504,7 +513,7 @@ void Menu::enterNameHandler(Joystick &joystick, byte parentMenu){
       resetUserInput(username, usernameSize);
     } else if (menuInput.currentCursorColumnPosition == verifyPosition) {
       // if the user is pointing to the exit icon,
-      // set the username's completed size 
+      // set the username's completed size
       usernameCompletedSize = menuInput.currentInputCursorPosition;
       
       if (usernameCompletedSize > 0) {
@@ -544,6 +553,7 @@ void Menu::lcdBrightnessMenuHandler(Joystick &joystick){
       EEPROM.put(0, lcdBrightness);
 
       lcd.clear();
+      menuInput.resetInputVariables();
       currentMenu = 3;
       return;
     }
@@ -562,6 +572,7 @@ void Menu::matrixBrightnessMenuHandler(Joystick &joystick){
       EEPROM.put(1, matrixBrightness);
 
       lcd.clear();
+      menuInput.resetInputVariables();
       currentMenu = 3;
       return;
     }
