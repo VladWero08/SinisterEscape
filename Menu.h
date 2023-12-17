@@ -458,16 +458,14 @@ void Menu::settingsMenuHandler(Joystick &joystick){
         break;
       case 1:
         // set the LCD brightness
-        menuInput.resetInputVariables();
-        menuInput.currentInputCursorPosition = setByteUserInput(lcdBrightness, brightnessNumber);;
-
+        menuInput.currentCursorColumnPosition = userInputStartPosition;
+        menuInput.currentCursorLinePosition = 0;
         currentMenu = 31;
         break;
       case 2:
         // set the matrix brightness
-        menuInput.resetInputVariables();
-        menuInput.currentInputCursorPosition = setByteUserInput(matrixBrightness, brightnessNumber);
-
+        menuInput.currentCursorColumnPosition = userInputStartPosition;
+        menuInput.currentCursorLinePosition = 0;
         currentMenu = 32;
         break;
       case 3:
@@ -536,92 +534,38 @@ void Menu::enterNameHandler(Joystick &joystick, byte parentMenu){
 };
 
 void Menu::lcdBrightnessMenuHandler(Joystick &joystick){
-  menuInput.userCursorLineHandler(lcd, joystick, numbersAlphabet);
+  menuInput.userBrightnessInputHandler(lcd, joystick, lcdBrightness, 1, 255);
 
-  if (joystick.currentSwitchStateChanged == HIGH && menuInput.currentCursorLinePosition == 0) {
-    // if the user pressed the joystick and is pointing
-    // somewhere on the first lin
+  // if the user pressed the joystick
+  if (joystick.currentSwitchStateChanged == HIGH) { 
+    // if the user is pointing to the exit icon,
+    // clear the lcd and go to the parent menu
+     if (menuInput.currentCursorColumnPosition == exitPosition) {
+      analogWrite(lcdBrightnessPin, lcdBrightness);
+      EEPROM.put(0, lcdBrightness);
 
-    if (menuInput.currentCursorColumnPosition == deletePosition) {
-      // if the user is pointing to the delete icon, 
-      // delete the user input
-      menuInput.currentInputCursorPosition = 0;
-      resetUserInput(brightnessNumber, brightnessNumberSize);
-    } else if (menuInput.currentCursorColumnPosition == verifyPosition) {
-      // if the user is pointing to the verify icon,
-      // try to transform the input to a byte
-      bool brightnessIsValid = saveCharAsByte(brightnessNumber, brightnessNumberSize, lcdBrightness);
-
-      if (brightnessIsValid) {
-        // if the brightness value was valid,
-        // save it to EEPROM
-        EEPROM.put(0, lcdBrightness);
-        analogWrite(lcdBrightnessPin, lcdBrightness);
-      }
-
-      // clear the lcd and go to the parent menu
-      lcd.clear();
-      currentMenu = 3;
-      return;
-    } else if (menuInput.currentCursorColumnPosition == exitPosition) {
-      // if the user is pointing to the exit icon,
-      // clear the lcd and go to the parent menu
       lcd.clear();
       currentMenu = 3;
       return;
     }
-  }
-
-  if (menuInput.currentCursorLinePosition == 0) {
-    menuInput.userInputControlsHandler(lcd, joystick);
-  } else {
-    menuInput.userInputHandler(lcd, joystick, brightnessNumberSize, brightnessNumber, numbersAlphabet);
-    menuInput.userAlphabetHandler(lcd, joystick, numbersAlphabet, 0, numbersAlphabetSize);
   }
 };
 
 void Menu::matrixBrightnessMenuHandler(Joystick &joystick){
-  menuInput.userCursorLineHandler(lcd, joystick, numbersAlphabet);
+  menuInput.userBrightnessInputHandler(lcd, joystick,  matrixBrightness, 1, 15);
 
-  if (joystick.currentSwitchStateChanged == HIGH && menuInput.currentCursorLinePosition == 0) {
-    // if the user pressed the joystick and is pointing
-    // somewhere on the first lin
+  // if the user pressed the joystick
+  if (joystick.currentSwitchStateChanged == HIGH) { 
+    // if the user is pointing to the exit icon,
+    // clear the lcd and go to the parent menu
+     if (menuInput.currentCursorColumnPosition == exitPosition) {
+      lc.setIntensity(0, matrixBrightness);
+      EEPROM.put(1, matrixBrightness);
 
-    if (menuInput.currentCursorColumnPosition == deletePosition) {
-      // if the user is pointing to the delete icon, 
-      // delete the user input
-      menuInput.currentInputCursorPosition = 0;
-      resetUserInput(brightnessNumber, brightnessNumberSize);
-    } else if (menuInput.currentCursorColumnPosition == verifyPosition) {
-      // if the user is pointing to the verify icon,
-      // try to transform the input to a byte
-      bool brightnessIsValid = saveCharAsByteMatrix(brightnessNumber, brightnessNumberSize, matrixBrightness);
-
-      if (brightnessIsValid) {
-        // if the brightness value was valid,
-        // save it to EEPROM
-        EEPROM.put(1, matrixBrightness);         
-        lc.setIntensity(0, matrixBrightness);
-      }
-
-      // clear the lcd and go to the parent menu
-      lcd.clear();
-      currentMenu = 3;
-      return;
-    } else if (menuInput.currentCursorColumnPosition == exitPosition) {
-      // if the user is pointing to the exit icon,
-      // clear the lcd and go to the parent menu
       lcd.clear();
       currentMenu = 3;
       return;
     }
-  }
-
-  if (menuInput.currentCursorLinePosition == 0) {
-    menuInput.userInputControlsHandler(lcd, joystick);
-  } else {
-    menuInput.userInputHandler(lcd, joystick, brightnessNumberSize, brightnessNumber, numbersAlphabet);
-    menuInput.userAlphabetHandler(lcd, joystick, numbersAlphabet, 0, numbersAlphabetSize);
   }
 };
 

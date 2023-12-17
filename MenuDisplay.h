@@ -47,6 +47,21 @@ void displayBlinkingChar(LiquidCrystal &lcd, const char* message, const int line
     }
 };
   
+void displayBlinkingByte(LiquidCrystal &lcd, const byte message, const int line, const int column){
+    if ((millis() - lastBlinkingChar) > lcdBlinkingInterval) {
+      displayBlinking = !displayBlinking;
+      lastBlinkingChar = millis();
+    }
+
+    if (displayBlinking) {
+      lcd.setCursor(column, line);
+      lcd.print(message);
+    } else {
+      lcd.setCursor(column, line);
+      lcd.print(" ");
+    }
+}
+
 /*
   Display the given message in the middle columns
   of the LCD, knowing the LCD has 16 columns

@@ -40,12 +40,16 @@ struct MenuInput{
   void userAlphabetHandler(LiquidCrystal &lcd, Joystick &joystick, const char* userAlphabet[], const int leftBoundary, const int rightBoundary);
   void userInputControlsHandler(LiquidCrystal &lcd, Joystick &joystick);
 
+  // functions to handle brightness input
+  void userBrightnessInputHandler(LiquidCrystal &lcd, Joystick &joystick, byte &brightness, const byte minBrightness, const byte maxBrightness);
+  void userBrightnessDisplay(LiquidCrystal &lcd, byte brightness, const byte minBrightness, const byte maxBrightness);
+
   int joystickPressControlsHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char* userInput[]);
   void userCursorLineHandler(LiquidCrystal &lcd, Joystick &joystick, const char* userAlphabet[]);
 
   // function to display user input
   void displayUserInput(LiquidCrystal &lcd, const char* userInput[]);
-
+ 
   // function to reset input variables
   void resetInputVariables();
 };
@@ -199,6 +203,101 @@ void MenuInput::userInputControlsHandler(LiquidCrystal &lcd, Joystick &joystick)
       break;
   }
 };
+
+
+void MenuInput::userBrightnessInputHandler(LiquidCrystal &lcd, Joystick &joystick, byte &brightness, const byte minBrightness, const byte maxBrightness){
+  if (joystick.direction == joystickLeft && currentCursorColumnPosition > userInputStartPosition) {  
+    if (currentCursorColumnPosition == exitPosition) {
+      currentCursorColumnPosition = userInputStartPosition + 2;
+    } else {
+      currentCursorColumnPosition -= 1;
+    }
+  }
+
+  if (joystick.direction == joystickRight && currentCursorColumnPosition < exitPosition) {
+    if (currentCursorColumnPosition == userInputStartPosition + 2) {
+      currentCursorColumnPosition = exitPosition;
+    } else {
+      currentCursorColumnPosition += 1;
+    }
+  }
+
+  if (currentCursorColumnPosition >= userInputStartPosition && currentCursorColumnPosition < userInputStartPosition + 3) {
+    int increment = 0;
+    
+    if (joystick.direction == joystickUp) {
+      increment += 1;
+    } 
+
+    if (joystick.direction == joystickDown) {
+      increment -= 1;
+    }
+
+    switch (currentCursorColumnPosition) {
+      case userInputStartPosition:
+        if (brightness + increment * 100 >= minBrightness && brightness + increment * 100 <= maxBrightness)
+          brightness = brightness + increment * 100;
+        break;
+      case userInputStartPosition + 1:
+        if (brightness + increment * 10 >= minBrightness && brightness + increment * 10 <= maxBrightness)
+          brightness = brightness + increment * 10;
+        break;
+      case userInputStartPosition + 2:
+        if (brightness + increment >= minBrightness && brightness + increment <= maxBrightness)
+          brightness = brightness + increment;
+        break;
+      default:
+        break;
+    }
+  }
+
+  userBrightnessDisplay(lcd, brightness, minBrightness, maxBrightness);
+}
+
+void MenuInput::userBrightnessDisplay(LiquidCrystal &lcd, byte brightness, const byte minBrightness, const byte maxBrightness){
+  lcd.setCursor(0, 0);
+  lcd.write(arrowIndex);
+
+  if (currentCursorColumnPosition != userInputStartPosition) {
+    lcd.setCursor(userInputStartPosition, 0);
+    lcd.print((brightness / 100) % 10);
+  } else {
+    displayBlinkingByte(lcd, (brightness / 100) % 10, 0, userInputStartPosition);
+  }
+
+  if (currentCursorColumnPosition != userInputStartPosition + 1) {
+    lcd.setCursor(userInputStartPosition + 1, 0);
+    lcd.print((brightness / 10) % 10);
+  } else {
+    displayBlinkingByte(lcd, (brightness / 10) % 10, 0, userInputStartPosition + 1);
+  }
+
+  if (currentCursorColumnPosition != userInputStartPosition + 2) {
+    lcd.setCursor(userInputStartPosition + 2, 0);
+    lcd.print(brightness % 10);
+  } else {
+    displayBlinkingByte(lcd, brightness % 10, 0, userInputStartPosition + 2);
+  }
+
+  if (currentCursorColumnPosition != exitPosition) {
+    lcd.setCursor(exitPosition, currentCursorLinePosition);
+    lcd.write(exitIndex);
+  } else {
+    displayBlinkingInt(lcd, exitIndex, currentCursorLinePosition, exitPosition);
+  }
+
+  lcd.setCursor(0, 1);
+  lcd.print("MIN:");
+
+  lcd.setCursor(4, 1);
+  lcd.print(minBrightness);
+
+  lcd.setCursor(9, 1);
+  lcd.print("MAX:");
+
+  lcd.setCursor(13, 1);
+  lcd.print(maxBrightness);
+}
 
 /*
   Listens to joystick presses when the cursor
