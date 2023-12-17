@@ -55,18 +55,12 @@ byte usernameCompletedSize;
 const byte usernameSize = 3;
 char* username[usernameSize] = {"", "", ""}; 
 
-const byte brightnessNumberSize = 3;
-char* brightnessNumber[brightnessNumberSize];
-
 const byte letterAlphabetSize = 26;
 const char* letterAlphabet[letterAlphabetSize] = {
   "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
 };
 
-const byte numbersAlphabetSize = 10;
-const char* numbersAlphabet[numbersAlphabetSize] = {
-  "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
-};
+const int resetTimeInterval = 2000;
 
 struct Menu{
   LiquidCrystal lcd;
@@ -392,9 +386,7 @@ void Menu::gameMenuHandler(Joystick &joystick){
   if (game.player.hasHighscore) {
     updateHighscores(game.time, username);
     writeHighscores();
-
     game.player.hasHighscore = false;
-    lcd.clear();
     return;
   }
 
@@ -406,6 +398,8 @@ void Menu::gameMenuHandler(Joystick &joystick){
         case 0:
           // user chose to play again
           game.reset(lc);
+          gameStartTime = millis();
+
           currentMenu = 11;
           break;
         case 1:
@@ -596,7 +590,7 @@ void Menu::resetHighscoresHandler(){
   // before returning to the parent menu, display
   // a message in which the user is acknowledged that
   // that the highscores were reset succesfully
-  if ((millis() - highscoresResetTime) <= 2000) {
+  if ((millis() - highscoresResetTime) <= resetTimeInterval) {
     displayMessageInCenter(lcd, "Highscores reset", 0);
     displayMessageInCenter(lcd, "successfully.", 1);
     return;

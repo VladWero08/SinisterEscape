@@ -7,6 +7,10 @@
 const byte playerNamesStartAddr = 3;
 const byte highscoreStartAddr = 6;
 const byte highscoresRegisteredAddr = 24;
+// the name of the player is 3 bytes, and the score
+// is 4 bytes, so for a highscore 7 bytes are needed to store it
+const byte highscoreSize = 7;
+const unsigned int highscoreDefaultValue = 900;
 
 // the maximum number of highscores that can be stored
 const byte maximumHighscores = 3;
@@ -31,14 +35,14 @@ void loadPlayersHighschores(){
 
     // player names are made of 3 characters
     for (int letter = 0; letter < 3; letter++) {
-      EEPROM.get(playerNamesStartAddr + score * 7 + letter, playerName[letter]);
+      EEPROM.get(playerNamesStartAddr + score * highscoreSize + letter, playerName[letter]);
     }
     // add the null character at the end
     playerName[3] = '\0';
     // copy the value into the array of player names
     playerNames[score] = strdup(playerName);
     
-    EEPROM.get(highscoreStartAddr + score * 7, highscores[score]);
+    EEPROM.get(highscoreStartAddr + score * highscoreSize, highscores[score]);
   }  
 };
 
@@ -85,10 +89,10 @@ void writeHighscores(){
   EEPROM.put(highscoresRegisteredAddr, highscoresRegistered);
 
   for (int i = 0; i < highscoresRegistered; i++) {
-    EEPROM.put(highscoreStartAddr + i * 7, highscores[i]);
+    EEPROM.put(highscoreStartAddr + i * highscoreSize, highscores[i]);
 
     for (int letter = 0; letter < 3; letter++) {
-      EEPROM.put(playerNamesStartAddr + i * 7 + letter, playerNames[i][letter]);
+      EEPROM.put(playerNamesStartAddr + i * highscoreSize + letter, playerNames[i][letter]);
     }
   }
 };
@@ -101,7 +105,7 @@ void writeHighscores(){
 */
 void resetHighscores(){
   for (int i = 0; i < maximumHighscores; i++) {
-    highscores[i] = 900;
+    highscores[i] = highscoreDefaultValue;
 
     for (int letter = 0; letter < 3; letter++) {
       playerNames[i][letter] = "-";

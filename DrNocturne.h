@@ -104,7 +104,7 @@ void DrNocturne::spawnInSameRoom(Player player){
 
   -> level 1: Dr. Nocturne is inactive
   -> level 2: <= 5
-  -> level 3: <= 4
+  -> level 3: <= 3
 
   When the player is close enough, Dr. Nocturne exits
   the waiting mode and enters in the chasing one.
