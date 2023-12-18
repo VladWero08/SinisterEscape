@@ -68,7 +68,7 @@ Besides finding clues, I thought about implementing the idea of **jump scare**, 
 
 <details closed>
 <summary><h2>🏚️ Description</h2></summary>
-Sinister Escape is a matrix game that is about traveling between **4 rooms** and finding notes, to escape from a haunted house. Who is haunting the house? Dr. Nocturne. Before getting into how Dr. Nocturne will haunt you and make it harder to escape from the house, we should discuss how the house is configured.
+Sinister Escape is a matrix game that is about traveling between 4 rooms and finding notes, to escape from a haunted house. Who is haunting the house? Dr. Nocturne. Before getting into how Dr. Nocturne will haunt you and make it harder to escape from the house, we should discuss how the house is configured.
 
 ### Rooms connection
 
@@ -115,8 +115,8 @@ He is presented by a **slow-blinking red dot**, with a blinking frequency _equal
 Once you come close enough, you will be able to realize that the slow-blinking red dot you were approaching was the Dr. How? He will start chasing you:
 
 - **LVL 1**: all notes are safe, you can collect them easily; leveling from 1 -> 2 occurs when the player collected **2 notes**;
-- **LVL 2**: Dr. Nocturne spawns; we will start chasing the player when the **Euclidean distance** between him and the player is <= 5; the speed with which he will approach the player is 1 move/s; leveling from 2 -> 3 occurs when the player collected **4 notes**;
-- **LVL 3**: Dr. Nocturne gets faster and trickier; the **Euclidean distance** between him and the player needs to be <= 3 in order to start chasing the player; the speed increased, 1 move/0.85s; this is his strength until the player reaches **6 notes** or **dies**.
+- **LVL 2**: Dr. Nocturne spawns; he will start chasing the player when the **Euclidean distance** between him and the player is $\le$ 5; the speed with which he will approach the player is 1 move/s; leveling from 2 -> 3 occurs when the player collected **4 notes**;
+- **LVL 3**: Dr. Nocturne gets faster and trickier; the **Euclidean distance** between him and the player needs to be $\le$ 3 in order to start chasing the player; the speed increased, 1 move/0.85s; this is his strength until the player reaches **6 notes** or **dies**.
 
 If Dr. Nocturne catches the player, he will eat one of his lives, than dissapear.
 
