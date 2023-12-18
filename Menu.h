@@ -361,6 +361,7 @@ void Menu::gameMenuHandler(Joystick &joystick){
   if ((millis() - gameStartTime) <= gameSpecialMomentsTimeInterval + transitionTime 
        && game.player.hasUserName) {
     lcd.clear();
+    game.lastTimeIncrement = millis();
     return;
   }
 
