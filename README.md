@@ -206,3 +206,6 @@ At any time, if you want to pause the game, just press the joystick, wherever yo
 **Good luck!**
   
 </details>
+
+Check out the <a href="https://youtu.be/WaORZJMfFRI">demo</a>. 
+_NOTE!_ Some LEDs do not work in the matrix, in the video. More specifically, the LEDs which do not work are on the _first_ and _second column_ of the matrix.
