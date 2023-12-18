@@ -2,9 +2,9 @@
   <img src="https://github.com/VladWero08/SinisterEscape/assets/77508081/34f4012d-7b52-4e0d-8122-cdacb4b1ef32" height="130" width="650"/>
 </p>
 
-Sinister Escape is my matrix project that I have made for the **Introduction to Robotics** course, taken in my *3rd year* at the *Faculty of Mathematics and Computer Science, University of Bucharest*. It is a game about collecting *notes*, in order to escape from the house hounted by *Dr. Nocturne*. Simple, right?
+Sinister Escape is the matrix project that I have made for the **Introduction to Robotics** course, taken in my *3rd year* at the *Faculty of Mathematics and Computer Science, University of Bucharest*. It is a game about collecting *notes*, in order to escape from the house hounted by *Dr. Nocturne*. Simple, right?
 
-<details open>
+<details closed>
 <summary><h2>📝 Task requirements</h2></summary>
 
 > *A game on a 16x16 logical matrix (it's OK to have only 1 physical matrix) that implements either multiple rooms, visibility / fog of war and/or multipls physical matrix.*
@@ -57,9 +57,18 @@ that you need to go through on each level;
 - you should have a feeling of progression in difficulty. Depending on the dynamic of the game, this is done in the same level or with multiple levels. You can make them progress dynamically or have a number of fixed levels with an endgame. Try to introduce some randomness, though.
 </details>
 
-<details open>
+<details closed>
+<summary><h2>🔙 Backstory</h2></summary>
+
+The first thing that got on my mind when I heard that we needed to configure _rooms_, in which the player should _move_, was **horror games**. Inspired by horror games like _Outlast_ and _Slenderman_, which involve **searching for clues** (in my case notes) to escape from the haunted house, I got hooked on the idea of creating my own spooky game.
+
+Besides finding clues, I thought about implementing the idea of **jump scare**, but on the level of an 8x8 matrix. As you will be able to see in the following description, the villain in my game will reveal itself only when the player is close enough, similar with all the popular horror games.
+  
+</details>
+
+<details closed>
 <summary><h2>🏚️ Description</h2></summary>
-Sinister Escape is a matrix game that is about travelling between **4 rooms** and finding notes, to escape from the haunted house. Who is hounting the house? Dr. Nocturne. Before getting into how Dr. Nocturne will haunt you and make it harder to escape from the house, we should discuss about how the house is configured.
+Sinister Escape is a matrix game that is about traveling between **4 rooms** and finding notes, to escape from a haunted house. Who is haunting the house? Dr. Nocturne. Before getting into how Dr. Nocturne will haunt you and make it harder to escape from the house, we should discuss how the house is configured.
 
 ### Rooms connection
 
@@ -84,9 +93,43 @@ On the matrix, this is how the rooms will be displayed:
 </p>
 
 Moving between rooms will be made through some _"doors"_; the doors are positioned on each room in: _R1C4_, _R1C5_, _R4C1_, _R4C8_, _R5C1_, _R5C8_,  _R8C4_, _R8C5_. (R = row, C = column). 
+
+### Player's / Note's representation 
+
+In the matrix, you will be represented by a **fast-blinking red dot**, while the notes will be **slow-blinking red dots**. Besides this, the walls will be **static red dots**. As you might have guessed already, you will not be able to move through the walls, you need to move through **uncolored dots**.
+
+<hr>
+
+### Note
+
+The notes will appear randomly in one of the rooms, which is also chosen randomly. After collecting one of them, it will randomly _spawn again_ in one of the rooms. The player will achieve a **WIN** only if he/she can collect **6 notes**. 
+
+<hr>
+
+### Dr. Nocturne
+
+This is where things get complicated. Dr. Nocturne is on his pursuit to _kill you_. He will also be spawned randomly.
+
+He is presented by a **slow-blinking red dot**, with a blinking frequency _equal_ to a note's blinking frequency. That means you cannot _distinguish between a note and Dr. Nocturne_.
+
+Once you come close enough, you will be able to realize that the slow-blinking red dot you were approaching was the Dr. How? He will start chasing you:
+
+- **LVL 1**: all notes are safe, you can collect them easily; leveling from 1 -> 2 occurs when the player collected **2 notes**;
+- **LVL 2**: Dr. Nocturne spawns; we will start chasing the player when the **Euclidean distance** between him and the player is <= 5; the speed with which he will approach the player is 1 move/s; leveling from 2 -> 3 occurs when the player collected **4 notes**;
+- **LVL 3**: Dr. Nocturne gets faster and trickier; the **Euclidean distance** between him and the player needs to be <= 3 in order to start chasing the player; the speed increased, 1 move/0.85s; this is his strength until the player reaches **6 notes** or **dies**.
+
+If Dr. Nocturne catches the player, he will eat one of his lives, than dissapear.
+
+<hr>
+
+### Player
+
+The player's main aim is to escape the haunted house as fast as possible while collecting **6 notes** and **staying alive**. In the beginning, he/she has 0 notes and 3 lives.
+
+During the game, the player will see a timer, that is constantly increasing. The timer will tell how efficient and fast the player was, it will dictate **the score**. If he/she moves too fast, she might get killed by Dr. Nocturne. If he/she moves too slowly maybe their score will not be enough to reach the high scores. What is the point of playing if you are not one of the best? 🤔
 </details>
 
-<details open>
+<details closed>
 <summary><h2>🔧 Set up</h2></summary>
 
 ### Components:
@@ -110,15 +153,56 @@ The name of the players will contain maximum **3 chars**, each one of them store
 
 ### Photos
 
+| From the top | From the side| From perspective |
+| ---------- | ---------- | --------- |
+| ![h08-top](https://github.com/VladWero08/IntroductionToRobotics/assets/77508081/2c6344a2-87a3-4d0a-8d2f-966e9f660626)| ![h08-side](https://github.com/VladWero08/IntroductionToRobotics/assets/77508081/705049a0-a803-4a22-a69c-8d56db1371ee) | ![h08-perspective](https://github.com/VladWero08/IntroductionToRobotics/assets/77508081/ac58c8ea-0ef3-476a-a3f3-c9280964df29) |
+
 </details>
 
-<details open>
+<details closed>
 <summary><h2>📑 Menu</h2></summary>
+  
+The structure of the menu will be the following:
+
+**Intro message**: which can be skipped by _pressing_ the joystick. 
+
+**Main menu**:
+  - **Start game**: after the game has finished, the user will need to choose from
+    - Play again
+    - Back (to the main menu)
+  - **Highscores**: display a list of highscores with the scores and the player's name, who achieved them
+  - **Settings**:
+    - **Enter name**: the user will be prompted a "keyboard" with all the letters of the alphabet, an input where the name chosen will be displayed, and 3 buttons: delete (the whole input), save, and exit (without saving); the joystick will be used to create the name by moving through letters and pressing;
+    - **LCD brightness setting**: the user will need to scroll **up** or **down** to modify the digits of the number that represents the LCD's brightness;
+    - **Matrix brightness setting**: the user will need to scroll **up** or **down** to modify the digits of the number that represents the matrix's brightness;
+    - **Reset scores**: all highscores will be reset
+    - **Sound setting (ON/OFF)**: toggle the sound throughout the whole session
+    - **Back**: (to the main menu)
+  - **About**: a small story about the game, and the name of the creator (me), that corresponds to the name of my GitHub account
+
+To enter a menu section, scroll through the current menu and press the menu you want to go to. To go back to the parent menu, from the current menu, use the _Back_ option or press the _exit arrow_, depending where you are currently navigating.
 </details>
 
-<details open>
+<details closed>
 <summary><h2>🎮 How to play</h2></summary>
-</details>
 
-<img src="https://github.com/VladWero08/SinisterEscape/assets/77508081/1bc21c3b-48e9-4fb5-a016-246cacaf8e39"/>
-<img src="https://github.com/VladWero08/SinisterEscape/assets/77508081/ad24c3f7-9d7f-43cf-822b-417ad2c54208"/>
+### Basics: 
+After starting the game, use the joystick to move around: up, down, left, right. If you point diagonally, the player will stay in the same place; analogous when bumping into walls.
+
+To move from one room to the other, use the _"doors"_ placed at the edges of the room (their position is explicitly defined at the beginning of the _description section_). 
+
+<hr>
+
+### Strategy:
+Search for notes, go near them, and collect them. To collect a note, you need to be placed over it; be careful, when approaching a note, and do not go too fast, it might be Dr. Nocturne disguised as one of them.
+
+Listen to the sounds during the game, you will hear a **special sound** when **collecting a note** or **losing a life**. Also, constantly check the LCD for the details of the game: _time_, _notes_, _lives_.
+
+<hr>
+
+### Pause
+At any time, if you want to pause the game, just press the joystick, wherever you might be located.
+
+**Good luck!**
+  
+</details>
