@@ -149,7 +149,7 @@ void Game::checkPlayerWasFoundByDoctor(LiquidCrystal &lcd){
 void Game::checkPlayerWon(LedControl &lc, LiquidCrystal &lcd){
   // check if the number of notes reached the number
   // needed for the player to win
-  if (player.notes == 0) {
+  if (player.notes == notesNeedForWin) {
     gameEndingTime = millis();
     // clear the matrix
     resetMatrix(lc);
