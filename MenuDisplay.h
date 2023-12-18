@@ -4,6 +4,7 @@
 
 #include "LiquidCrystal.h"
 #include "CustomCharacters.h"
+#include "ConstantsHighscore.h"
 
 const byte lcdBlinkingInterval = 500;
 bool displayBlinking = true;
@@ -32,7 +33,7 @@ void displayBlinkingInt(LiquidCrystal &lcd, const int message, const int line, c
   Display the given message, in the given 
   position, depending on the blinking control variable
 */
-void displayBlinkingChar(LiquidCrystal &lcd, const char* message, const int line, const int column){
+void displayBlinkingChar(LiquidCrystal &lcd, const char message, const int line, const int column){
     if ((millis() - lastBlinkingChar) > lcdBlinkingInterval) {
       displayBlinking = !displayBlinking;
       lastBlinkingChar = millis();
@@ -185,14 +186,16 @@ void displayTimeFromSeconds(LiquidCrystal &lcd, const unsigned int time, const b
   }
 };
 
-void displayPlayerAndScore(LiquidCrystal &lcd, const char* playerName, const unsigned long score, const byte line){
+void displayPlayerAndScore(LiquidCrystal &lcd, char playerName[playerNameSize], const unsigned long score, const byte line){
   if (score == 900) {
     lcd.setCursor(4, line);
     lcd.print("none");
   } else {
       // display the name of the player
-      lcd.setCursor(4, line);
-      lcd.print(playerName);
+      for (int i = 0; i < 3; i++) {
+        lcd.setCursor(4 + i, line);
+        lcd.print(playerName[i]);
+      }
       
       // display the score of the player
       displayTimeFromSeconds(lcd, score, 8, line);
@@ -204,7 +207,7 @@ void displayPlayerAndScore(LiquidCrystal &lcd, const char* playerName, const uns
   display the ranking symbol, the name and the score of the players
   on each line of the LCD.
 */
-void displayHighscores(LiquidCrystal &lcd, const char* playerNames[], const unsigned long scores[], int maxPlayers, int menuIndex, int arrowLinePosition) {
+void displayHighscores(LiquidCrystal &lcd, char playerNames[maximumHighscores][playerNameSize], const unsigned long scores[], int maxPlayers, int menuIndex, int arrowLinePosition) {
   lcd.setCursor(0, arrowLinePosition);
   lcd.write(arrowIndex);
 
@@ -229,7 +232,7 @@ void displayHighscores(LiquidCrystal &lcd, const char* playerNames[], const unsi
 };
 
 
-void displayGameStartedMessage(LiquidCrystal &lcd, char* username[], byte usernameSize) {
+void displayGameStartedMessage(LiquidCrystal &lcd, char username[], byte usernameSize) {
   displayMessageInCenter(lcd, "Good luck,", 0);
 
   for (int i = 0; i < usernameSize; i++) {

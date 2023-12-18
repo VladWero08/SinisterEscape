@@ -2,6 +2,8 @@
 #ifndef HIGHSCORES_H
 #define HIGHSCORES_H
 
+#include "ConstantsHighscore.h"
+
 // addressed in EEPROM memory where
 // highscores information is stored
 const byte playerNamesStartAddr = 3;
@@ -9,16 +11,14 @@ const byte highscoreStartAddr = 6;
 const byte highscoresRegisteredAddr = 24;
 // the name of the player is 3 bytes, and the score
 // is 4 bytes, so for a highscore 7 bytes are needed to store it
-const byte highscoreSize = 7;
+const byte highscoreSize = 7;   
 const unsigned int highscoreDefaultValue = 900;
 
-// the maximum number of highscores that can be stored
-const byte maximumHighscores = 3;
 // the actual number of highscores that is stored in EPPROM
 byte highscoresRegistered;
 
 unsigned long highscores[maximumHighscores];
-char* playerNames[maximumHighscores];
+char playerNames[maximumHighscores][playerNameSize];
 
 /*
   Load the number of highscores, the highscores and
@@ -31,16 +31,12 @@ void loadPlayersHighschores(){
   for (int score = 0; score < maximumHighscores; score++) {
     // read the ith score and the player's name who 
     // made that score
-    char playerName[4];
+    char playerName[3];
 
     // player names are made of 3 characters
     for (int letter = 0; letter < 3; letter++) {
-      EEPROM.get(playerNamesStartAddr + score * highscoreSize + letter, playerName[letter]);
+      EEPROM.get(playerNamesStartAddr + score * highscoreSize + letter, playerNames[score][letter]);
     }
-    // add the null character at the end
-    playerName[3] = '\0';
-    // copy the value into the array of player names
-    playerNames[score] = strdup(playerName);
     
     EEPROM.get(highscoreStartAddr + score * highscoreSize, highscores[score]);
   }  
@@ -53,7 +49,7 @@ void loadPlayersHighschores(){
   Update the rest of the highscores as well (if possible), by
   copying them to a lower rank in the list.
 */
-void updateHighscores(unsigned long newHighscore, char* playerName[]){
+void updateHighscores(unsigned long newHighscore, char playerName[]){
   for (int i = 0; i < highscoresRegistered; i++) {
     // search for the position where the new highscores
     // should ne inserted
@@ -62,15 +58,14 @@ void updateHighscores(unsigned long newHighscore, char* playerName[]){
       // will be inserted into lower positions, to keep the top valid
       for (int j = highscoresRegistered - 1; j >= i + 1; j--) {
         highscores[j] = highscores[j - 1]; 
-        playerNames[j] = strdup(playerNames[j - 1]);
+        playerNames[i][j] = playerNames[i][j - 1];
       }
 
       // insert the new highscore
       highscores[i] = newHighscore;
-      // also, insert the name associated with the score
-      playerNames[i] = "";
+
       for (int j = 0; j < 3; j++) {
-        strcat(playerNames[i], playerName[j]);
+        playerNames[i][j] = playerName[j];
       }
       break;
     }
@@ -108,7 +103,7 @@ void resetHighscores(){
     highscores[i] = highscoreDefaultValue;
 
     for (int letter = 0; letter < 3; letter++) {
-      playerNames[i][letter] = "-";
+      playerNames[i][letter] = ' ';
     }
   }
 

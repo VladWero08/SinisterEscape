@@ -53,12 +53,9 @@ const char* aboutMenu[4] = {
 
 byte usernameCompletedSize;
 const byte usernameSize = 3;
-char* username[usernameSize] = {"", "", ""}; 
+char username[usernameSize] = {' ', ' ', ' '}; 
 
 const byte letterAlphabetSize = 26;
-const char* letterAlphabet[letterAlphabetSize] = {
-  "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
-};
 
 const int resetTimeInterval = 2000;
 
@@ -140,7 +137,7 @@ struct Menu{
 
   // reset functions 
   void resetMenu();
-  void resetUserInput(char* userInput[], byte userInputSize);
+  void resetUserInput(char userInput[], byte userInputSize);
 };
 
 /*
@@ -490,7 +487,7 @@ void Menu::settingsMenuHandler(Joystick &joystick){
 };
 
 void Menu::enterNameHandler(Joystick &joystick, byte parentMenu){
-  menuInput.userCursorLineHandler(lcd, joystick, letterAlphabet);
+  menuInput.userCursorLineHandler(lcd, joystick);
 
   if (joystick.currentSwitchStateChanged == HIGH && menuInput.currentCursorLinePosition == 0) {
     // if the user pressed the joystick and is pointing
@@ -526,8 +523,8 @@ void Menu::enterNameHandler(Joystick &joystick, byte parentMenu){
   if (menuInput.currentCursorLinePosition == 0) {
     menuInput.userInputControlsHandler(lcd, joystick);
   } else {
-    menuInput.userInputHandler(lcd, joystick, usernameSize, username, letterAlphabet);
-    menuInput.userAlphabetHandler(lcd, joystick, letterAlphabet, 0, letterAlphabetSize);
+    menuInput.userInputHandler(lcd, joystick, usernameSize, username);
+    menuInput.userAlphabetHandler(lcd, joystick, 0, letterAlphabetSize);
   }
 };
 
@@ -663,10 +660,10 @@ void Menu::resetMenu(){
   currentMenuPosition = 0;
 };
 
-void Menu::resetUserInput(char* userInput[], byte userInputSize){
+void Menu::resetUserInput(char userInput[], byte userInputSize){
   for (int i = 0; i < userInputSize; i++) {
     // reset the value in the memory
-    userInput[i] = " ";
+    userInput[i] = ' ';
 
     // reset the value visually, in the LCD
     lcd.setCursor(userInputStartPosition + i, 0);

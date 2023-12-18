@@ -36,20 +36,19 @@ struct MenuInput{
   } 
 
   // functions to handle user movements
-  void userInputHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char* userInput[], const char* userAlphabet[]);
-  void userAlphabetHandler(LiquidCrystal &lcd, Joystick &joystick, const char* userAlphabet[], const int leftBoundary, const int rightBoundary);
+  void userInputHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char userInput[]);
+  void userAlphabetHandler(LiquidCrystal &lcd, Joystick &joystick, const int leftBoundary, const int rightBoundary);
   void userInputControlsHandler(LiquidCrystal &lcd, Joystick &joystick);
-  void userCursorLineHandler(LiquidCrystal &lcd, Joystick &joystick, const char* userAlphabet[]);
-  int joystickPressControlsHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char* userInput[]);
+  void userCursorLineHandler(LiquidCrystal &lcd, Joystick &joystick);
+  int joystickPressControlsHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char userInput[]);
   // function to display user input
-  void displayUserInput(LiquidCrystal &lcd, const char* userInput[]);
+  void displayUserInput(LiquidCrystal &lcd, const char userInput[]);
 
   // functions to handle brightness input
   void userBrightnessInputHandler(LiquidCrystal &lcd, Joystick &joystick, byte &brightness, const byte minBrightness, const byte maxBrightness);
   void userBrightnessMovementHandler(Joystick &joystick);
   void userBrightnessDisplay(LiquidCrystal &lcd, byte brightness, const byte minBrightness, const byte maxBrightness);
 
- 
   // function to reset input variables
   void resetInputVariables();
 };
@@ -64,7 +63,7 @@ struct MenuInput{
 
   Display the user input on line 1 of the LCD.
 */
-void MenuInput::userInputHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char* userInput[], const char* userAlphabet[]) {
+void MenuInput::userInputHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char userInput[]) {
   // display the arrow at the beggining of the input
   lcd.setCursor(arrowPosition, 0);
   lcd.write(arrowIndex);
@@ -86,7 +85,7 @@ void MenuInput::userInputHandler(LiquidCrystal &lcd, Joystick &joystick, const i
     // check if the joystick switch was pressed, and if
     // it was, add the letter the user is pointing at in the input
     if (joystick.currentSwitchStateChanged == HIGH) {
-      userInput[currentInputCursorPosition] = userAlphabet[currentCursorColumnPosition];
+      userInput[currentInputCursorPosition] = (char) ('A' + currentCursorColumnPosition);
       currentInputCursorPosition += 1;
     }
   }
@@ -94,7 +93,7 @@ void MenuInput::userInputHandler(LiquidCrystal &lcd, Joystick &joystick, const i
   displayUserInput(lcd, userInput);
 };
 
-void MenuInput::displayUserInput(LiquidCrystal &lcd, const char* userInput[]){
+void MenuInput::displayUserInput(LiquidCrystal &lcd, const char userInput[]){
   // display the user input
   for (int i = 0; i < currentInputCursorPosition; i++) {
     lcd.setCursor(userInputStartPosition + i, 0);
@@ -112,7 +111,7 @@ void MenuInput::displayUserInput(LiquidCrystal &lcd, const char* userInput[]){
   If the movement goes beyond boundaries, shift the
   alphabet one position (to left or right).
 */
-void MenuInput::userAlphabetHandler(LiquidCrystal &lcd, Joystick &joystick, const char* userAlphabet[], const int leftBoundary, const int rightBoundary) {
+void MenuInput::userAlphabetHandler(LiquidCrystal &lcd, Joystick &joystick, const int leftBoundary, const int rightBoundary) {
   // if the joystick moved to the left and the cursor position
   // will not move out of the left boundary of the alphabet
   if (joystick.direction == joystickLeft && currentCursorColumnPosition > leftBoundary) {
@@ -140,11 +139,11 @@ void MenuInput::userAlphabetHandler(LiquidCrystal &lcd, Joystick &joystick, cons
   for (int i = 0; i < min(rightBoundary, 16); i++) {
     if (i + alphabetPositionBoundary == currentCursorColumnPosition) {
       // blink the cursor
-      displayBlinkingChar(lcd, userAlphabet[currentCursorColumnPosition], 1, i);
+      displayBlinkingChar(lcd, (char) ('A' + currentCursorColumnPosition), 1, i);
     } else {
       // display the characters of the alphabet
       lcd.setCursor(i, 1);
-      lcd.print(userAlphabet[i + alphabetPositionBoundary]);
+      lcd.print((char) ('A' + i + alphabetPositionBoundary));
     }   
   }
 };
@@ -213,7 +212,7 @@ void MenuInput::userInputControlsHandler(LiquidCrystal &lcd, Joystick &joystick)
   If the joysticl moved down, and the user is currently
   on the 1st line, switch to the 2nd line.
 */
-void MenuInput::userCursorLineHandler(LiquidCrystal &lcd, Joystick &joystick, const char* userAlphabet[]){
+void MenuInput::userCursorLineHandler(LiquidCrystal &lcd, Joystick &joystick){
   if (joystick.direction == joystickUp && currentCursorLinePosition == 1) {
     // when switching from the alphabet to the controls, 
     // update the column cursor to proportionally point to a LCD
@@ -221,7 +220,7 @@ void MenuInput::userCursorLineHandler(LiquidCrystal &lcd, Joystick &joystick, co
     currentCursorColumnPosition -= alphabetPositionBoundary;
 
     lcd.setCursor(currentCursorColumnPosition, currentCursorLinePosition);
-    lcd.print(userAlphabet[currentCursorColumnPosition + alphabetPositionBoundary]);
+    lcd.print((char) ('A' + currentCursorColumnPosition + alphabetPositionBoundary));
 
     // update the line position
     currentCursorLinePosition -= 1;
@@ -393,7 +392,7 @@ void MenuInput::userBrightnessDisplay(LiquidCrystal &lcd, byte brightness, const
   Listens to joystick presses when the cursor
   is on the 1st line (control line).
 */
-int MenuInput::joystickPressControlsHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char* userInput[]){
+int MenuInput::joystickPressControlsHandler(LiquidCrystal &lcd, Joystick &joystick, const int maxInput, char userInput[]){
   // if the joystick has not been pressed, exit
   if (joystick.currentSwitchStateChanged != HIGH) {
     return -1;
@@ -410,7 +409,7 @@ int MenuInput::joystickPressControlsHandler(LiquidCrystal &lcd, Joystick &joysti
     currentInputCursorPosition = 0;
     // empty the userInput values
     for (int i = 0; i < maxInput; i++) {
-      userInput[i] = "";
+      userInput[i] = ' ';
     }
   } else if (currentCursorColumnPosition == verifyPosition) {
     // TO DO: save the name in memory and EEPROM
