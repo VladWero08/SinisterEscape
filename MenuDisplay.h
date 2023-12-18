@@ -31,7 +31,7 @@ void displayBlinkingInt(LiquidCrystal &lcd, const int message, const int line, c
   
 /*
   Display the given message, in the given 
-  position, depending on the blinking control variable
+  position, depending on the blinking control variable.
 */
 void displayBlinkingChar(LiquidCrystal &lcd, const char message, const int line, const int column){
     if ((millis() - lastBlinkingChar) > lcdBlinkingInterval) {

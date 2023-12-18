@@ -206,7 +206,7 @@ void Player::displayNotes(LiquidCrystal &lcd){
 void Player::displayLives(LiquidCrystal &lcd, byte heartsStartPosition, const int line){
   for(int i = 0; i < lives; i++) {
     lcd.setCursor(heartsStartPosition + i, line);
-    lcd.write(skullIndex);
+    lcd.write(heartIndex);
   }
 };
 

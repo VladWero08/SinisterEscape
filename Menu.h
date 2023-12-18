@@ -167,8 +167,6 @@ void Menu::activateMenuSettins(){
   lc.setIntensity(0, matrixBrightness);
 };
 
-
-
 void Menu::displayWelcomeMessage(){
   displayMessageInCenter(lcd, "SinisterEscape", 0);
   displayMessageInCenterWithSkull(lcd, "RUN", 1);
@@ -184,7 +182,6 @@ void Menu::welcomeMessageHandler(Joystick &joystick){
     resetMenu();
   }
 };
-
 
 /*
   Acts as a central control point for managing different
